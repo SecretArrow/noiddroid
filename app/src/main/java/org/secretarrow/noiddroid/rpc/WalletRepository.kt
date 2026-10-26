@@ -113,7 +113,9 @@ class WalletRepository
         response.error?.let {
             throw WalletRpcException(it.code, it.message, it.data?.let { d -> d as? JsonObject })
         }
+        return response.result ?: throw WalletRpcException(-1, "Empty result", null)
     }
+}
 
 class WalletRpcException(
     val code: Int,
