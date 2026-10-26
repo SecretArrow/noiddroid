@@ -34,6 +34,9 @@ import org.secretarrow.noiddroid.rpc.BlockTemplate
 import org.secretarrow.noiddroid.rpc.MiningRepository
 import org.secretarrow.noiddroid.store.SettingsRepository
 import org.secretarrow.noiddroid.ui.MainActivity
+import org.secretarrow.noiddroid.util.hexDecode
+import org.secretarrow.noiddroid.util.hexEncode
+import org.secretarrow.noiddroid.util.safeToULong
 
 /**
  * Foreground mining service. Owns the [MinerNative] handle, the wake lock,
@@ -64,7 +67,17 @@ class MiningService : LifecycleService() {
         super.onCreate()
         ensureChannel()
         startForeground(NOTIF_ID, buildNotification("Idle", 0))
+        // Create the native miner. If libnoiddroid.so failed to load at
+        // app startup (e.g. wrong ABI, missing .so in APK), surface the
+        // error immediately so the UI shows what's wrong instead of
+        // silently sitting on Idle forever.
         minerHandle = MinerNative.create(0)
+        if (minerHandle == 0L) {
+            val msg = MinerNative.error?.message ?: "libnoiddroid.so failed to load"
+            val err = MiningState.Error("native init: $msg")
+            _state.value = err
+            MiningStateBus.publish(err)
+        }
         startGuards()
     }
 
@@ -108,33 +121,42 @@ class MiningService : LifecycleService() {
                         try {
                             mining.getBlockTemplate()
                         } catch (t: Throwable) {
-                            _state.value = MiningState.Error("getTemplate: ${t.message}")
+                            val errMsg = "getTemplate: ${t.message}"
+                            _state.value = MiningState.Error(errMsg)
+                            MiningStateBus.publish(MiningState.Error(errMsg))
                             delay(RETRY_MS)
                             continue
                         }
-                    _state.value = MiningState.Hashing(rate = 0, template = template)
+                    val hashing = MiningState.Hashing(rate = 0, template = template)
+                    _state.value = hashing
+                    MiningStateBus.publish(hashing)
+
+                    val templateIdLong = safeToULong(template.templateId)?.toLong() ?: 0L
 
                     val result =
                         if (useGpu) {
                             val r =
                                 MinerNative.searchGpu(
-                                    header = template.header.hexDecode(),
-                                    target = template.target.hexDecode(),
-                                    templateId = template.templateId.toLong(),
+                                    header = hexDecode(template.header),
+                                    target = hexDecode(template.target),
+                                    templateId = templateIdLong,
                                     onProgress = { rate ->
-                                        _state.value = MiningState.Hashing(rate, template)
+                                        val hs = MiningState.Hashing(rate, template)
+                                        _state.value = hs
+                                        MiningStateBus.publish(hs)
                                         updateNotification(rate)
                                     },
                                 )
                             if (r.rc == -1) {
-                                // Vulkan unavailable — fall back to CPU
                                 MinerNative.searchCpu(
                                     handle = minerHandle,
-                                    header = template.header.hexDecode(),
-                                    target = template.target.hexDecode(),
-                                    templateId = template.templateId.toLong(),
+                                    header = hexDecode(template.header),
+                                    target = hexDecode(template.target),
+                                    templateId = templateIdLong,
                                     onProgress = { rate ->
-                                        _state.value = MiningState.Hashing(rate, template)
+                                        val hs = MiningState.Hashing(rate, template)
+                                        _state.value = hs
+                                        MiningStateBus.publish(hs)
                                         updateNotification(rate)
                                     },
                                 )
@@ -144,11 +166,13 @@ class MiningService : LifecycleService() {
                         } else {
                             MinerNative.searchCpu(
                                 handle = minerHandle,
-                                header = template.header.hexDecode(),
-                                target = template.target.hexDecode(),
-                                templateId = template.templateId.toLong(),
+                                header = hexDecode(template.header),
+                                target = hexDecode(template.target),
+                                templateId = templateIdLong,
                                 onProgress = { rate ->
-                                    _state.value = MiningState.Hashing(rate, template)
+                                    val hs = MiningState.Hashing(rate, template)
+                                    _state.value = hs
+                                    MiningStateBus.publish(hs)
                                     updateNotification(rate)
                                 },
                             )
@@ -158,6 +182,7 @@ class MiningService : LifecycleService() {
                         onSubmitSolution(template, result)
                     } else {
                         _state.value = MiningState.Idle
+                        MiningStateBus.publish(MiningState.Idle)
                     }
                 }
             }
@@ -168,12 +193,15 @@ class MiningService : LifecycleService() {
         searchJob = null
         ioScope.launch { MinerNative.stop(minerHandle) }
         _state.value = MiningState.Idle
+        MiningStateBus.publish(MiningState.Idle)
         updateNotification(0, idle = true)
     }
 
     private fun pauseMining(reason: String) {
         searchJob?.cancel()
-        _state.value = MiningState.Paused(reason)
+        val paused = MiningState.Paused(reason)
+        _state.value = paused
+        MiningStateBus.publish(paused)
         updateNotification(0, paused = reason)
     }
 
@@ -185,16 +213,20 @@ class MiningService : LifecycleService() {
             val submission =
                 mining.submitBlock(
                     templateId = template.templateId,
-                    nonceHex = result.nonceBytes.toHex(),
+                    nonceHex = hexEncode(result.nonceBytes),
                 )
-            _state.value =
+            val nextState =
                 if (submission.accepted) {
                     MiningState.BlockFound(template.templateId)
                 } else {
                     MiningState.Error("Rejected: ${submission.reason ?: "no reason"}")
                 }
+            _state.value = nextState
+            MiningStateBus.publish(nextState)
         } catch (t: Throwable) {
-            _state.value = MiningState.Error("submitBlock: ${t.message}")
+            val err = MiningState.Error("submitBlock: ${t.message}")
+            _state.value = err
+            MiningStateBus.publish(err)
         }
     }
 
@@ -330,25 +362,6 @@ class MiningService : LifecycleService() {
             else -> "$rate H/s"
         }
 
-    // ── Hex helpers (kept here to avoid an extra util file) ──────────
-    private fun String.hexDecode(): ByteArray {
-        require(length % 2 == 0) { "Hex string has odd length" }
-        return ByteArray(length / 2) {
-            val hi = Character.digit(this[it * 2], 16)
-            val lo = Character.digit(this[it * 2 + 1], 16)
-            ((hi shl 4) or lo).toByte()
-        }
-    }
-
-    private fun ByteArray.toHex(): String {
-        val sb = StringBuilder(size * 2)
-        for (b in this) {
-            val v = b.toInt() and 0xFF
-            sb.append(HEX[v ushr 4]).append(HEX[v and 0x0F])
-        }
-        return sb.toString()
-    }
-
     companion object {
         private const val TAG = "MiningService"
         private const val CHANNEL_ID = "noiddroid.mining"
@@ -357,7 +370,6 @@ class MiningService : LifecycleService() {
         private const val WAKE_TIMEOUT_MS = 24L * 60 * 60 * 1000
         private const val RETRY_MS = 5000L
         private const val GUARD_INTERVAL_MS = 10_000L
-        private val HEX = "0123456789abcdef".toCharArray()
 
         const val ACTION_START = "org.secretarrow.noiddroid.START"
         const val ACTION_STOP = "org.secretarrow.noiddroid.STOP"

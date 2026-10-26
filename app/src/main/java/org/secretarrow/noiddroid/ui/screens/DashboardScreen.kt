@@ -21,13 +21,13 @@ fun DashboardScreen(nav: NavController) {
     val minerEnabled by vm.minerEnabled.collectAsState()
     val useGpu by vm.useGpu.collectAsState()
     val nodeUrl by vm.nodeUrl.collectAsState()
+    val hashRate by vm.hashRate.collectAsState()
 
     Column(
-        modifier =
-            Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 32.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp, vertical = 32.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
         BrutalSectionTitle("Dashboard")
@@ -37,7 +37,7 @@ fun DashboardScreen(nav: NavController) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
-        BrutalPanel(modifier = Modifier.fillMaxWidth()) {
+        BrutalPanel(modifier = Modifier.fillMaxWidth(), accent = minerEnabled) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -45,6 +45,15 @@ fun DashboardScreen(nav: NavController) {
             ) {
                 BrutalStat("Status", if (minerEnabled) "ACTIVE" else "IDLE")
                 Switch(checked = minerEnabled, onCheckedChange = vm::setMinerEnabled)
+            }
+            if (minerEnabled && hashRate > 0) {
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    text = formatHash(hashRate),
+                    style = MaterialTheme.typography.displaySmall,
+                    fontFamily = MaterialTheme.typography.labelSmall.fontFamily,
+                    fontWeight = FontWeight.Black,
+                )
             }
         }
 
@@ -66,7 +75,7 @@ fun DashboardScreen(nav: NavController) {
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                text = nodeUrl.ifBlank { "Not configured" },
+                text = nodeUrl.ifBlank { "Not configured — open Settings" },
                 style = MaterialTheme.typography.titleMedium,
                 fontFamily = MaterialTheme.typography.labelSmall.fontFamily,
             )
@@ -90,4 +99,10 @@ fun DashboardScreen(nav: NavController) {
             ) { Text("Settings") }
         }
     }
+}
+
+private fun formatHash(rate: Long): String = when {
+    rate >= 1_000_000 -> "%.2f MH/s".format(rate / 1_000_000.0)
+    rate >= 1_000 -> "%.2f kH/s".format(rate / 1_000.0)
+    else -> "$rate H/s"
 }
