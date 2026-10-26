@@ -37,6 +37,7 @@ pub mod search;
 
 use std::os::raw::{c_char, c_int, c_long, c_void};
 use std::slice;
+use std::sync::Arc;
 
 /// Opaque miner context. Returned from `noid_miner_create`, freed by
 /// `noid_miner_destroy`. Holds thread pool state and per-thread nonces.
@@ -52,7 +53,8 @@ struct MinerInner {
     /// Last reported hashrate across all threads.
     pub hashrate: u64,
     /// Stop flag — set to `1` to request a clean shutdown of all worker threads.
-    pub stop_flag: std::sync::atomic::AtomicBool,
+    /// Arc so it can be safely cloned into thread::spawn closures.
+    pub stop_flag: Arc<std::sync::atomic::AtomicBool>,
 }
 
 /// Header schedule as returned by `getBlockTemplate` — 80 bytes for the
@@ -138,7 +140,7 @@ pub extern "C" fn noid_search_cpu(
     match search::run_cpu_search(
         template,
         miner.inner.threads,
-        &miner.inner.stop_flag,
+        Arc::clone(&miner.inner.stop_flag),
         progress_callback,
         ctx,
     ) {

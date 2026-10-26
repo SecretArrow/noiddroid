@@ -42,10 +42,14 @@ impl NonceCounter {
 }
 
 /// Multi-threaded CPU search. Returns `Some((nonce, hash_rate))` if a winning nonce is found.
+///
+/// `stop_flag` is an Arc so it can be safely shared into worker threads
+/// (a plain `&AtomicBool` would fail the borrow checker's lifetime check
+/// when captured by `thread::spawn`).
 pub fn run_cpu_search(
     template: &NoidTemplate,
     threads: u32,
-    stop_flag: &AtomicBool,
+    stop_flag: Arc<AtomicBool>,
     progress_callback: Option<extern "C" fn(rate: u64, ctx: *mut std::os::raw::c_void)>,
     ctx: *mut std::os::raw::c_void,
 ) -> Option<(u128, u64)> {
@@ -63,7 +67,7 @@ pub fn run_cpu_search(
             let hash_counter = Arc::clone(&hash_counter);
             let header = template.header;
             let target = template.target;
-            let ext_stop = stop_flag;
+            let ext_stop = Arc::clone(&stop_flag);
 
             thread::spawn(move || {
                 let mut local_hashes: u64 = 0;
