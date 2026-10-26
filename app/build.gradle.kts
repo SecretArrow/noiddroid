@@ -123,15 +123,17 @@ android {
             isIncludeAndroidResources = true
             isReturnDefaultValues = true
         }
+        // Disable animations on instrumented tests for stability
         animations = TestsAnimations.DISABLED
+        // Gradle Managed Devices — virtual ATD emulators for E2E
         managedDevices {
-            allDevices {
-                val pixel6 by creating {
+            devices {
+                create<com.android.build.api.dsl.ManagedVirtualDevice>("pixel6") {
                     device = "Pixel 6"
                     apiLevel = 34
                     systemImageSource = "aosp-atd"
                 }
-                val pixel8 by creating {
+                create<com.android.build.api.dsl.ManagedVirtualDevice>("pixel8") {
                     device = "Pixel 8"
                     apiLevel = 35
                     systemImageSource = "aosp-atd"
@@ -228,13 +230,12 @@ detekt {
 }
 
 ktlint {
-    version.set("1.3.1")
-    debug.set(false)
-    android.set(true)
-    outputToConsole.set(true)
-    ignoreFailures.set(false)
-    enableExperimentalRules.set(true)
-    additionalEditorconfigFile.set(file("$rootDir/.editorconfig"))
+    version = "1.3.1"
+    debug = false
+    android = true
+    outputToConsole = true
+    ignoreFailures = false
+    enableExperimentalRules = true
     filter {
         exclude { it.path.contains("/generated/") }
         exclude { it.path.contains("/build/") }
