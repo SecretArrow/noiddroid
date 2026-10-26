@@ -1,52 +1,66 @@
 package org.secretarrow.noiddroid.store
 
-import io.mockk.mockk
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 
 /**
- * Tests for SettingsRepository. Uses a mock Context instead of
- * ApplicationProvider/Robolectric to keep the test pure-JVM and avoid
- * pulling in androidx.test:core + Robolectric SDK picker (flaky in CI).
- *
- * The DataStore is created against the application context — under mockk
- * this returns null on first read, which our default-value flows handle.
+ * Tests for SettingsRepository. Uses Robolectric's RuntimeEnvironment
+ * (no @RunWith needed — we resolve the application via RuntimeEnvironment
+ * rather than ApplicationProvider, which was failing to resolve in CI).
  */
+@RunWith(RobolectricTestRunner::class)
 class SettingsRepositoryTest {
-    private val ctx = mockk<android.content.Context>(relaxed = true)
-    private val repo = SettingsRepository(ctx)
+
+
+    private lateinit var ctx: Context
+    private lateinit var repo: SettingsRepository
+
+    @Before
+    fun setup() {
+        ctx = RuntimeEnvironment.getApplication()
+        repo = SettingsRepository(ctx)
+    }
+
+    @After
+    fun teardown() {
+        // Clear the DataStore between tests so each starts fresh.
+        ctx.getSharedPreferences("noiddroid", Context.MODE_PRIVATE).edit().clear().commit()
+    }
 
     @Test
-    fun `defaults are populated`() =
-        runTest {
-            // DataStore reads return the default when no write has happened.
-            assertEquals(false, repo.useGpu.first())
-            assertEquals(0, repo.cpuThreads.first())
-            assertEquals(true, repo.darkMode.first())
-            assertEquals(20, repo.batteryGuardThreshold.first())
-            assertEquals(40, repo.thermalGuardThreshold.first())
-            assertEquals(true, repo.wakeLockEnabled.first())
-        }
+    fun `defaults are populated`() = runTest {
+        assertEquals(SettingsRepository.DEFAULT_NODE_URL, repo.nodeRpcUrl.first())
+        assertEquals(SettingsRepository.DEFAULT_WALLET_URL, repo.walletRpcUrl.first())
+        assertEquals(false, repo.useGpu.first())
+        assertEquals(0, repo.cpuThreads.first())
+        assertEquals(true, repo.darkMode.first())
+        assertEquals(20, repo.batteryGuardThreshold.first())
+        assertEquals(40, repo.thermalGuardThreshold.first())
+        assertEquals(true, repo.wakeLockEnabled.first())
+    }
 
     @Test
-    fun `set and read back bearer token`() =
-        runTest {
-            repo.setBearerToken("tok-abc")
-            // Note: with mockk Context, the underlying Preferences.DataStore
-            // writes are no-ops, so reading back returns the default (null).
-            // We assert the call doesn't throw.
-            assertEquals(null, repo.bearerToken.first())
-        }
+    fun `set and read back bearer token`() = runTest {
+        repo.setBearerToken("tok-abc")
+        assertEquals("tok-abc", repo.bearerToken.first())
+        repo.setBearerToken(null)
+        assertEquals(null, repo.bearerToken.first())
+    }
 
     @Test
-    fun `battery guard threshold setter clamps to valid range`() =
-        runTest {
-            // Setter clamps the value 0 -> 5, 100 -> 50.
-            repo.setBatteryGuardThreshold(0)
-            repo.setBatteryGuardThreshold(100)
-            // Reads return default (20) under mockk — only asserts no throw.
-            assertEquals(20, repo.batteryGuardThreshold.first())
-        }
+    fun `battery guard threshold is clamped`() = runTest {
+        repo.setBatteryGuardThreshold(0)
+        assertEquals(5, repo.batteryGuardThreshold.first())
+        repo.setBatteryGuardThreshold(100)
+        assertEquals(50, repo.batteryGuardThreshold.first())
+    }
 }
