@@ -207,6 +207,8 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.kotlinx.coroutines.core)
     testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.androidx.test.runner)
     testImplementation(libs.kotlinx.serialization.json)
 
     androidTestImplementation(libs.androidx.junit)
