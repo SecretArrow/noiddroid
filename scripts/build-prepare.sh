@@ -36,15 +36,19 @@ export CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER="$CC_aarch64_linux_android"
   cargo build --target aarch64-linux-android --lib
 )
 
-# Copy artifacts where CMakeLists.txt expects them.
-RELEASE_SRC="$RUST_DIR/target/aarch64-linux-android/release/libnoiddroid_core.a"
-DEBUG_SRC="$RUST_DIR/target/aarch64-linux-android/debug/libnoiddroid_core.a"
-RELEASE_DST="$RUST_DIR/target/aarch64-linux-android/release/libnoiddroid_core.a"
-DEBUG_DST="$RUST_DIR/target/aarch64-linux-android/debug/libnoiddroid_core.a"
+# Verify artifacts exist where CMakeLists.txt expects them.
+# (No copy needed — cargo already writes to the correct path.)
+RELEASE_LIB="$RUST_DIR/target/aarch64-linux-android/release/libnoiddroid_core.a"
+DEBUG_LIB="$RUST_DIR/target/aarch64-linux-android/debug/libnoiddroid_core.a"
 
-mkdir -p "$(dirname "$RELEASE_DST")" "$(dirname "$DEBUG_DST")"
-cp -f "$RELEASE_SRC" "$RELEASE_DST"
-cp -f "$DEBUG_SRC" "$DEBUG_DST"
+if [[ ! -f "$RELEASE_LIB" ]]; then
+  echo "ERROR: release artifact missing at $RELEASE_LIB" >&2
+  exit 1
+fi
+if [[ ! -f "$DEBUG_LIB" ]]; then
+  echo "ERROR: debug artifact missing at $DEBUG_LIB" >&2
+  exit 1
+fi
 
 echo "==> Rust build complete:"
-ls -lh "$RELEASE_DST" "$DEBUG_DST"
+ls -lh "$RELEASE_LIB" "$DEBUG_LIB"
