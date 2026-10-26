@@ -22,14 +22,15 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object WorkManagerModule {
-
     @Provides
     @Singleton
     fun provideWorkManagerConfig(
         @ApplicationContext ctx: Context,
         workerFactory: HiltWorkerFactory,
-    ): Configuration = Configuration.Builder()
-        .setWorkerFactory(workerFactory)
-        .setMinimumLoggingLevel(android.util.Log.INFO)
-        .build()
+    ): Configuration =
+        Configuration
+            .Builder()
+            .setWorkerFactory(workerFactory)
+            .setMinimumLoggingLevel(android.util.Log.INFO)
+            .build()
 }
