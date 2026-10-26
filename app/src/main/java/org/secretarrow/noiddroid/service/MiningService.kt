@@ -27,13 +27,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import org.secretarrow.noiddroid.ui.MainActivity
 import org.secretarrow.noiddroid.R
 import org.secretarrow.noiddroid.mine.MinerNative
 import org.secretarrow.noiddroid.mine.SearchResult
 import org.secretarrow.noiddroid.rpc.BlockTemplate
 import org.secretarrow.noiddroid.rpc.MiningRepository
 import org.secretarrow.noiddroid.store.SettingsRepository
+import org.secretarrow.noiddroid.ui.MainActivity
 
 /**
  * Foreground mining service. Owns the [MinerNative] handle, the wake lock,
