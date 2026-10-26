@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Splash base -->
+    <!-- Splash base — parent must come from androidx.core:core-splashscreen
+         (added in app/build.gradle.kts). Attribute names use windowSplashScreen*
+         not windowSplash* (the older, removed names). -->
     <style name="Theme.Noiddroid.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashBackground">@color/paper</item>
-        <item name="windowSplashAnimatedIcon">@drawable/ic_splash_logo</item>
+        <item name="windowSplashScreenBackground">@color/paper</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
         <item name="postSplashScreenTheme">@style/Theme.Noiddroid</item>
     </style>
 
