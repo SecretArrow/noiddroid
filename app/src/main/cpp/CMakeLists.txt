@@ -17,8 +17,10 @@ string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWER)
 
 # ── Rust static library path ────────────────────────────────────────────
 # Built by cargo before Gradle assembles the APK. The `rust/build-prepare.sh`
-# script cross-compiles to aarch64-linux-android and copies the .a here.
-set(RUST_LIB_DIR "${CMAKE_SOURCE_DIR}/../rust/target/aarch64-linux-android/${CMAKE_BUILD_TYPE_LOWER}")
+# script cross-compiles to aarch64-linux-android and writes the .a here.
+# CMAKE_SOURCE_DIR = app/src/main/cpp/ ; project root is 4 levels up.
+set(PROJECT_ROOT "${CMAKE_SOURCE_DIR}/../../../..")
+set(RUST_LIB_DIR "${PROJECT_ROOT}/rust/target/aarch64-linux-android/${CMAKE_BUILD_TYPE_LOWER}")
 set(RUST_LIB "${RUST_LIB_DIR}/libnoiddroid_core.a")
 
 if(NOT EXISTS "${RUST_LIB}")
