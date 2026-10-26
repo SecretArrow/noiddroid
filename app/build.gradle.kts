@@ -27,7 +27,7 @@ android {
         versionCode = 1
         versionName = "0.1.0-alpha01"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "org.secretarrow.noiddroid.HiltTestRunner"
         vectorDrawables { useSupportLibrary = true }
 
         ndk {
@@ -276,6 +276,10 @@ dependencies {
     androidTestImplementation(libs.mockk)
     androidTestImplementation(libs.turbine)
     androidTestImplementation(libs.kotlinx.coroutines.test)
+    // Hilt testing — per testing-setup skill Step 2: register a custom
+    // test runner + apply HiltAndroidRule on @HiltAndroidTest classes.
+    androidTestImplementation(libs.hilt.android.testing)
+    kspAndroidTest(libs.hilt.compiler)
 }
 
 ksp {
