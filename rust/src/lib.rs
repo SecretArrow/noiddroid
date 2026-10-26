@@ -35,7 +35,7 @@
 pub mod poseidon2b;
 pub mod search;
 
-use std::os::raw::{c_char, c_int, c_void};
+use std::os::raw::{c_char, c_int, c_long, c_void};
 use std::slice;
 
 /// Opaque miner context. Returned from `noid_miner_create`, freed by
@@ -137,8 +137,8 @@ pub extern "C" fn noid_search_cpu(
 
     match search::run_cpu_search(
         template,
-        miner.threads,
-        &miner.stop_flag,
+        miner.inner.threads,
+        &miner.inner.stop_flag,
         progress_callback,
         ctx,
     ) {
@@ -147,12 +147,12 @@ pub extern "C" fn noid_search_cpu(
             solution.nonce_lo = nonce as u64;
             solution.nonce_hi = (nonce >> 64) as u64;
             solution.hash_rate = hash_rate;
-            miner.hashrate = hash_rate;
+            miner.inner.hashrate = hash_rate;
             1
         }
         None => {
             solution.template_id = template.template_id;
-            miner.hashrate = 0;
+            miner.inner.hashrate = 0;
             0
         }
     }
