@@ -229,7 +229,7 @@ detekt {
     parallel = true
     autoCorrect = true
     allRules = false
-    ignoreFailures = true  // v1: warn-only — autofix.yml commits real fixes
+    ignoreFailures = true // v1: warn-only — autofix.yml commits real fixes
 }
 
 ktlint {
