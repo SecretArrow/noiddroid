@@ -84,7 +84,7 @@ pub extern "C" fn noid_miner_create(threads: c_int) -> *mut NoidMiner {
         },
         ..Default::default()
     });
-    Box::into_raw(NoidMiner { inner })
+    Box::into_raw(Box::new(NoidMiner { inner }))
 }
 
 #[no_mangle]
