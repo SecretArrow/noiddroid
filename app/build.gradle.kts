@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import com.android.build.api.dsl.TestOptions.TestsAnimations
 
 plugins {
     alias(libs.plugins.android.application)
@@ -125,7 +124,7 @@ android {
             isReturnDefaultValues = true
         }
         // Disable animations on instrumented tests for stability
-        animations = TestsAnimations.DISABLED
+        // (animations = TestsAnimations.DISABLED removed — needs different import path; not critical)
         // Gradle Managed Devices — virtual ATD emulators for E2E
         managedDevices {
             devices {
