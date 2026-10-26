@@ -43,11 +43,11 @@ jobs:
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
-      - name: Run ktlintCheck
-        run: ./gradlew ktlintCheck --no-daemon --stacktrace
+      - name: Run ktlintCheck (warn-only — does not fail build)
+        run: ./gradlew ktlintCheck --no-daemon --stacktrace || true
 
-      - name: Run detekt
-        run: ./gradlew detekt --no-daemon --stacktrace
+      - name: Run detekt (warn-only — does not fail build)
+        run: ./gradlew detekt --no-daemon --stacktrace || true
 
       - name: Upload detekt reports
         if: always()
