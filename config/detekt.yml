@@ -1,11 +1,9 @@
 # Detekt config — strict but sensible for production.
 # Reference: https://detekt.dev/docs/rules/configuration
+# NOTE: 'autoCorrect' is set in app/build.gradle.kts via the plugin's
+# `autoCorrect = true` property, NOT here (the YAML 'autoCorrect' key
+# is rejected by detekt's strict config validator).
 
-# ─── Top-level options ───────────────────────────────────────────────────
-# autoCorrect applies globally — move out of any ruleset block.
-autoCorrect: true
-
-# ─── Rulesets ────────────────────────────────────────────────────────────
 complexity:
   active: true
   ComplexCondition:
@@ -31,9 +29,6 @@ complexity:
   NestedBlockDepth:
     active: true
     threshold: 5
-  TooLongFunction:
-    active: true
-    threshold: 80
 
 empty-blocks:
   active: true
@@ -67,8 +62,6 @@ naming:
 performance:
   active: true
   ForEachOnRange:
-    active: true
-  SpreadInCall:
     active: true
 
 potential-bugs:
