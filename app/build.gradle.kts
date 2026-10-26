@@ -1,4 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
+import org.gradle.testing.jacoco.tasks.JacocoReport
 
 plugins {
     alias(libs.plugins.android.application)
@@ -126,15 +128,10 @@ android {
         unitTests {
             isIncludeAndroidResources = true
             isReturnDefaultValues = true
-            // Per testing-setup skill Step 14: enable Jacoco coverage on
-            // unit tests so ./gradlew jacocoTestReport generates HTML at
-            // app/build/reports/jacoco/jacocoTestReport/html/index.html
-            all {
-                it.jacoco {
-                    includeNoLocationClasses = true
-                    excludes += listOf("jdk.internal.*")
-                }
-            }
+            // Jacoco coverage config moved to the project-level `jacoco {}`
+            // extension below — AGP 8.x doesn't expose `it.jacoco` inside
+            // `unitTests.all`. The Gradle `jacoco` plugin (applied in the
+            // plugins block) is the canonical way to enable it.
         }
         // Disable animations on instrumented tests for stability
         // (animations = TestsAnimations.DISABLED removed — needs different import path; not critical)
@@ -155,18 +152,54 @@ android {
         }
     }
 
-    // Per testing-setup skill Step 14: Jacoco coverage for local JVM tests.
-    // ./gradlew :app:jacocoTestReport -> app/build/reports/jacoco/
-    jacoco {
-        toolVersion = "0.8.11"
-    }
-
     lint {
         abortOnError = false
         checkReleaseBuilds = false
         disable += setOf("MissingTranslation", "ExtraTranslation")
         warningsAsErrors = false
     }
+}
+
+// Per testing-setup skill Step 14: Jacoco coverage for local JVM tests.
+// Project-level config — AGP 8.x doesn't expose `jacoco {}` inside
+// the `android {}` block, so the Gradle plugin's extension is used here.
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+// Wire the Jacoco agent onto the Test task so coverage data is recorded,
+// then add a `jacocoTestReport` task that aggregates it into HTML.
+// Run: ./gradlew :app:jacocoTestReport
+// Output: app/build/reports/jacoco/jacocoTestReport/html/index.html
+tasks.withType<Test>().configureEach {
+    configure<JacocoTaskExtension> {
+        isIncludeNoLocationClasses = true
+        excludes = listOf("jdk.internal.*")
+    }
+}
+
+tasks.register<JacocoReport>("jacocoTestReport") {
+    group = "verification"
+    description = "Generates Jacoco coverage HTML report for unit tests."
+    dependsOn("testDebugUnitTest")
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+    }
+    val fileFilter = listOf(
+        "**/R.class", "**/R$*.class",
+        "**/BuildConfig.*", "**/Manifest.*",
+        "**/*_Hilt*", "**/*_Hilt_*",
+        "**/*_Factory*", "**/*_MembersInjector*",
+        "**/dagger/hilt/**", "**/hilt_*/**",
+    )
+    val debugTree = fileTree("build/tmp/kotlin-classes/debug") {
+        exclude(fileFilter)
+    }
+    classDirectories.setFrom(debugTree)
+    sourceDirectories.setFrom(files("src/main/java", "src/main/kotlin"))
+    executionData.setFrom(fileTree(buildDir).include("jacoco/*.exec"))
 }
 
 dependencies {
