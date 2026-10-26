@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import com.android.build.api.dsl.TestOptions.TestsAnimations
 
 plugins {
     alias(libs.plugins.android.application)
@@ -217,8 +218,8 @@ dependencies {
 }
 
 ksp {
-    arg("dagger.fastInit") = "enabled"
-    arg("dagger.hilt.android.internal.useAggregatingComponent") = "true"
+    arg("dagger.fastInit", "enabled")
+    arg("dagger.hilt.android.internal.useAggregatingComponent", "true")
 }
 
 detekt {
