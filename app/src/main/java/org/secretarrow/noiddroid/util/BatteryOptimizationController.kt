@@ -20,14 +20,14 @@ import android.provider.Settings
  * even with a wake lock. The skill says: never cache permission state —
  * query `PowerManager.isIgnoringBatteryOptimizations` dynamically.
  */
-class BatteryOptimizationController(private val context: Context) {
-
+class BatteryOptimizationController(
+    private val context: Context,
+) {
     private val powerManager: PowerManager
         get() = context.getSystemService(Context.POWER_SERVICE) as PowerManager
 
     /** Returns true if the app is already on the Doze whitelist. */
-    fun isIgnoring(): Boolean =
-        powerManager.isIgnoringBatteryOptimizations(context.packageName)
+    fun isIgnoring(): Boolean = powerManager.isIgnoringBatteryOptimizations(context.packageName)
 
     /**
      * Launch the system dialog asking the user to add this app to the Doze
@@ -39,11 +39,12 @@ class BatteryOptimizationController(private val context: Context) {
     fun requestIgnoreIfNeeded() {
         if (isIgnoring()) return
         runCatching {
-            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-                data = Uri.parse("package:${context.packageName}")
-                // Don't bring up a new task — caller is an Activity.
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
+            val intent =
+                Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                    data = Uri.parse("package:${context.packageName}")
+                    // Don't bring up a new task — caller is an Activity.
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
             context.startActivity(intent)
         }.onFailure { t ->
             // Per the skill: catch SecurityException around protected

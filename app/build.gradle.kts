@@ -1,6 +1,6 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import org.gradle.testing.jacoco.tasks.JacocoReport
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.application)
@@ -187,16 +187,23 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         html.required.set(true)
         csv.required.set(false)
     }
-    val fileFilter = listOf(
-        "**/R.class", "**/R$*.class",
-        "**/BuildConfig.*", "**/Manifest.*",
-        "**/*_Hilt*", "**/*_Hilt_*",
-        "**/*_Factory*", "**/*_MembersInjector*",
-        "**/dagger/hilt/**", "**/hilt_*/**",
-    )
-    val debugTree = fileTree("build/tmp/kotlin-classes/debug") {
-        exclude(fileFilter)
-    }
+    val fileFilter =
+        listOf(
+            "**/R.class",
+            "**/R$*.class",
+            "**/BuildConfig.*",
+            "**/Manifest.*",
+            "**/*_Hilt*",
+            "**/*_Hilt_*",
+            "**/*_Factory*",
+            "**/*_MembersInjector*",
+            "**/dagger/hilt/**",
+            "**/hilt_*/**",
+        )
+    val debugTree =
+        fileTree("build/tmp/kotlin-classes/debug") {
+            exclude(fileFilter)
+        }
     classDirectories.setFrom(debugTree)
     sourceDirectories.setFrom(files("src/main/java", "src/main/kotlin"))
     executionData.setFrom(fileTree(buildDir).include("jacoco/*.exec"))
