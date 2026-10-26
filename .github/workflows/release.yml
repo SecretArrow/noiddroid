@@ -1,0 +1,62 @@
+name: release
+
+# ───────────────────────────────────────────────────────────────────────
+# Release pipeline — triggered by a tag like v0.1.0-alpha01.
+# Produces a signed release APK, attaches it to a GitHub Release, and
+# updates the version badge in README.
+# ───────────────────────────────────────────────────────────────────────
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & publish release APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - uses: gradle/actions/setup-gradle@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with: { targets: aarch64-linux-android }
+      - uses: nttoddt/setup-android-ndk@v1
+        with: { ndk-version: r26b }
+
+      - name: Build Rust core
+        env:
+          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
+        run: bash scripts/build-prepare.sh
+
+      - name: Build release APK
+        env:
+          SIGNING_KEYSTORE: ${{ secrets.SIGNING_KEYSTORE }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+        run: |
+          if [[ -z "$SIGNING_KEYSTORE" ]]; then
+            echo "No signing key configured — using debug-signed release"
+            ./gradlew assembleRelease --no-daemon
+          else
+            echo "$SIGNING_KEYSTORE" | base64 -d > /tmp/release.keystore
+            ./gradlew assembleRelease \
+              -Pandroid.injected.signing.storeFile=/tmp/release.keystore \
+              -Pandroid.injected.signing.storePassword="$SIGNING_STORE_PASSWORD" \
+              -Pandroid.injected.signing.keyAlias="$SIGNING_KEY_ALIAS" \
+              -Pandroid.injected.signing.keyPassword="$SIGNING_KEY_PASSWORD" \
+              --no-daemon
+          fi
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: app/build/outputs/apk/release/*.apk
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') }}

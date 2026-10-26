@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brutalist dark overrides — pure black background, paper text -->
+    <color name="paper">#FF000000</color>
+    <color name="ink">#FFFAFAFA</color>
+    <color name="rule">#FF262626</color>
+    <color name="rule_inverse">#FFE5E5E5</color>
+    <color name="accent">#FFFAFAFA</color>
+    <color name="accent_inverse">#FF0A0A0A</color>
+</resources>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Noiddroid</string>
+    <string name="app_short_name">Noiddroid</string>
+
+    <!-- Mining service -->
+    <string name="mining_channel_name">Mining</string>
+    <string name="mining_channel_desc">Status updates from the Poseidon2b nonce search</string>
+    <string name="mining_notification_title">Mining NOID</string>
+    <string name="mining_notification_text_idle">Idle — waiting for new template</string>
+    <string name="mining_notification_text_active">Hashing at %1$s H/s on %2$s</string>
+    <string name="mining_notification_text_paused">Paused — %1$s</string>
+    <string name="mining_notification_action_pause">Pause</string>
+    <string name="mining_notification_action_resume">Resume</string>
+    <string name="mining_notification_action_stop">Stop</string>
+
+    <!-- Wallet -->
+    <string name="wallet_balance_title">Balance</string>
+    <string name="wallet_send_title">Send</string>
+    <string name="wallet_history_title">History</string>
+
+    <!-- Errors -->
+    <string name="err_no_node_configured">No parano1d node configured. Open Settings.</string>
+    <string name="err_node_unreachable">Cannot reach node at %1$s</string>
+    <string name="err_unauthorized">Unauthorized — check your bearer token in Settings.</string>
+    <string name="err_battery_low">Battery below %1$d%% — pausing</string>
+    <string name="err_thermal_throttle">Device temperature %1$.1f°C — pausing</string>
+
+    <!-- Boot -->
+    <string name="boot_resume">Resuming scheduled mining windows after boot</string>
+
+    <!-- About -->
+    <string name="about_title">About</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_subtitle">External Poseidon2b worker + wallet RPC client for the parano1d network.</string>
+</resources>

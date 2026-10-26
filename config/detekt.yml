@@ -1,0 +1,95 @@
+# Detekt config — strict but sensible for production
+# https://detekt.dev/docs/next.0/rules/configuration
+
+complexity:
+  active: true
+  ComplexCondition:
+    active: true
+    threshold: 5
+  ComplexInterface:
+    active: true
+    threshold: 12
+  CyclomaticComplexMethod:
+    active: true
+    threshold: 20
+  LargeClass:
+    active: true
+    threshold: 250
+  LongMethod:
+    active: true
+    threshold: 80
+  LongParameterList:
+    active: true
+    functionThreshold: 7
+    constructorThreshold: 7
+    ignoreDefaultParameters: true
+  NestedBlockDepth:
+    active: true
+    threshold: 5
+  TooLongFunction:
+    active: true
+    threshold: 80
+
+style:
+  active: true
+  WildcardImport:
+    active: true
+    excludes: ['**/test/**', '**/androidTest/**']
+  ReturnCount:
+    active: false  # happy-path early returns are fine
+  MagicNumber:
+    active: false  # crypto code is full of magic numbers; rely on consts
+  MaxLineLength:
+    active: true
+    maxLineLength: 140
+    excludePackageStatements: true
+    excludeImportStatements: true
+
+naming:
+  active: true
+  FunctionNaming:
+    active: true
+    functionPattern: '([a-z][a-zA-Z0-9]*)|(`.*`)'
+    excludes: ['**/test/**', '**/androidTest/**', '**/ui/**', '**/theme/**']
+  TopLevelPropertyNaming:
+    active: true
+    constantPattern: '[A-Z][A-Za-z0-9]*'
+
+empty-blocks:
+  active: true
+  EmptyFunctionBlock:
+    active: false  # Hilt-generated stubs trigger this
+  EmptyClassBlock:
+    active: false
+
+exceptions:
+  active: true
+  SwallowedException:
+    active: true
+    excludes: ['**/rpc/**']  # retrofit error swallowing is conventional
+
+performance:
+  active: true
+  ForEachOnRange:
+    active: true
+  SpreadInCall:
+    active: true
+
+potential-bugs:
+  active: true
+  UnsafeCallOnNullableType:
+    active: true
+  IteratorNotThrowingNoSuchElementException:
+    active: true
+
+formatting:
+  active: true
+  autoCorrect: true
+  CommentSpacing:
+    active: true
+  Indentation:
+    active: true
+    indentSize: 4
+  MaximumLineLength:
+    active: true
+    maxLineLength: 140

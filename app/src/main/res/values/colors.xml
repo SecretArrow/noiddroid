@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brutalist minimal palette: pure black/white, single accent -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="ink">#FF0A0A0A</color>
+    <color name="paper">#FFFAFAFA</color>
+    <color name="accent">#FF1A1A1A</color>
+    <color name="accent_inverse">#FFE5E5E5</color>
+    <color name="status_active">#FF000000</color>
+    <color name="status_idle">#FFB3B3B3</color>
+    <color name="status_error">#FF1A1A1A</color>
+    <color name="graphite">#FF555555</color>
+    <color name="rule">#FFE5E5E5</color>
+    <color name="rule_inverse">#FF262626</color>
+</resources>

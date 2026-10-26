@@ -1,0 +1,51 @@
+// vulkan/shaders/poseidon2b.comp — Poseidon2b permutation as a GLSL compute shader.
+//
+// v1 status: PLACEHOLDER shader. The full Poseidon2b permutation in GLSL
+// requires implementing BN254 field arithmetic (256-bit modular arithmetic
+// using two uvec4 / uint64_t pairs). That is a substantial undertaking
+// and is being tracked in `docs/gpu_roadmap.md`.
+//
+// This placeholder shader exists so the Vulkan dispatch pipeline can be
+// tested end-to-end. The compiled SPIR-V is a no-op main that returns
+// without modifying the storage buffer. `scripts/compile_shaders.py`
+// generates the actual header from this source.
+//
+// Once filled in, the shader will receive:
+//   layout(binding=0) buffer IO {
+//     uint header[20];     // 80-byte template header (20 x uint32)
+//     uint target[8];      // 32-byte target threshold (big-endian)
+//     uint template_id;    // u32 lower half
+//     uint template_id_hi; // u32 upper half
+//     uint nonce_lo;       // worker-assigned start nonce (low)
+//     uint nonce_hi;       // worker-assigned start nonce (high)
+//     uint found_flag;     // atomicEXCH if a worker finds a winning nonce
+//     uint winning_lo;
+//     uint winning_hi;
+//     uint hash_count;     // atomic counter for hash rate
+//   } io;
+//
+// Each workgroup searches a 2^16 nonce chunk before returning.
+
+#version 450
+
+layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+
+layout(binding = 0) buffer IO {
+    uint header[20];
+    uint target[8];
+    uint template_id;
+    uint template_id_hi;
+    uint nonce_lo;
+    uint nonce_hi;
+    uint found_flag;
+    uint winning_lo;
+    uint winning_hi;
+    uint hash_count;
+} io;
+
+void main() {
+    // v1: just increment hash_count to prove the dispatch is alive.
+    if (gl_GlobalInvocationID.x == 0u) {
+        atomicAdd(io.hash_count, 64u);
+    }
+}

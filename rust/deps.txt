@@ -1,0 +1,5 @@
+# ───────────────────────────────────────────────────────────────────────
+# deps.txt — direct dependencies of the Rust core.
+# Kept in-tree so dependabot can open PRs even without a Cargo.lock.
+# ───────────────────────────────────────────────────────────────────────
+# (no third-party crates — noiddroid-core is zero-dependency by design)

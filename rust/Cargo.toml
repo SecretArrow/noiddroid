@@ -1,0 +1,28 @@
+[package]
+name = "noiddroid-core"
+version = "0.1.0-alpha01"
+edition = "2021"
+description = "parano1d Poseidon2b nonce-search core for Android arm64"
+license = "MIT"
+publish = false
+
+[lib]
+name = "noiddroid_core"
+crate-type = ["cdylib", "staticlib"]
+path = "src/lib.rs"
+
+[dependencies]
+# Zero-dependency by design — keeps .so size tiny and audit trivial.
+# Poseidon2b constants are baked into `src/constants.rs`.
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+debug = false
+
+[profile.dev]
+opt-level = 0
+debug = true

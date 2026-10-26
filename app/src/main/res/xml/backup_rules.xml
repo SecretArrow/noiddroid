@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <exclude domain="sharedpref" path="noid_credentials.xml" />
+    <exclude domain="sharedpref" path="noid_node.xml" />
+    <exclude domain="file" path="wallet/" />
+</full-backup-content>

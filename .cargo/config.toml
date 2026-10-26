@@ -1,0 +1,8 @@
+[target.aarch64-linux-android]
+# Use the NDK-bundled clang; linker is set via env in scripts/build-prepare.sh
+linker = "aarch64-linux-android26-clang"
+
+[net]
+# Sometimes git-fetching deps from crates.io times out on slow runners.
+git-fetch-with-cli = true
+retry = 3
