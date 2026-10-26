@@ -12,7 +12,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 import org.secretarrow.noiddroid.ui.screens.AboutScreen
 import org.secretarrow.noiddroid.ui.screens.DashboardScreen
 import org.secretarrow.noiddroid.ui.screens.MinerScreen
@@ -22,28 +21,28 @@ import org.secretarrow.noiddroid.ui.theme.NoiddroidTheme
 
 /**
  * Single-activity host. Splash -> Compose NavHost. Edge-to-edge enabled.
- * All routing handled by [org.secretarrow.noiddroid.ui.NavRoute].
+ * All routing handled by [NavRoute].
  */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    @Inject
-    lateinit var splashViewModel: SplashViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splash = installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        splash.setKeepOnScreenCondition { !splashViewModel.ready.value }
-
         setContent {
-            val theme = hiltViewModel<ThemeViewModel>()
-            val darkMode = theme.darkMode.collectAsStateWithLifecycle(initialValue = null)
-            val ready = splashViewModel.ready.collectAsState()
+            // Obtain the SplashViewModel via Compose's hiltViewModel() so
+            // Hilt doesn't try to @Inject a @HiltViewModel directly into
+            // the Activity (which it forbids).
+            val splashVm: SplashViewModel = hiltViewModel()
+            val themeVm: ThemeViewModel = hiltViewModel()
+            val darkMode = themeVm.darkMode.collectAsStateWithLifecycle(initialValue = null)
+            val ready = splashVm.ready.collectAsState()
 
-            NoiddroidTheme(
-                darkTheme = darkMode.value ?: true,
-            ) {
+            splash.setKeepOnScreenCondition { !ready.value }
+
+            NoiddroidTheme(darkTheme = darkMode.value ?: true) {
                 val nav = rememberNavController()
                 NavHost(
                     navController = nav,
@@ -71,16 +70,10 @@ class MainActivity : ComponentActivity() {
 }
 
 /** Top-level navigation routes — single source of truth. */
-sealed class NavRoute(
-    val path: String,
-) {
+sealed class NavRoute(val path: String) {
     data object Dashboard : NavRoute("dashboard")
-
     data object Miner : NavRoute("miner")
-
     data object Wallet : NavRoute("wallet")
-
     data object Settings : NavRoute("settings")
-
     data object About : NavRoute("about")
 }
