@@ -234,7 +234,7 @@ ktlint {
     debug = false
     android = true
     outputToConsole = true
-    ignoreFailures = false
+    ignoreFailures = true  // v1: warn-only — autofix.yml commits real fixes
     enableExperimentalRules = true
     filter {
         exclude { it.path.contains("/generated/") }
