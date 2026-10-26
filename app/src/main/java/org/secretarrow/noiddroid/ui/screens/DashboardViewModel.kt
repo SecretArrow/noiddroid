@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import org.secretarrow.noiddroid.service.MiningService
 import org.secretarrow.noiddroid.service.MiningStateBus
 import org.secretarrow.noiddroid.store.SettingsRepository
+import org.secretarrow.noiddroid.util.BatteryOptimizationController
 
 @HiltViewModel
 class DashboardViewModel
@@ -34,13 +35,18 @@ class DashboardViewModel
 
         val hashRate: StateFlow<Long> = MiningStateBus.hashRate
 
-        /** Toggle the miner on/off. Persists the preference AND starts/stops the
-         *  foreground service so the action takes effect immediately. */
+        /** Toggle the miner on/off. Persists the preference AND starts/stops
+         *  the foreground service so the action takes effect immediately.
+         *
+         *  When enabling: also fires the battery-optimization exemption
+         *  prompt (per security skill) so the OS doesn't eventually kill
+         *  the foreground service during long idle periods. */
         fun setMinerEnabled(v: Boolean) {
             viewModelScope.launch {
                 settings.setMinerEnabled(v)
                 val ctx = getApplication<Application>()
                 if (v) {
+                    BatteryOptimizationController(ctx).requestIgnoreIfNeeded()
                     MiningService.start(ctx)
                 } else {
                     MiningService.stop(ctx)

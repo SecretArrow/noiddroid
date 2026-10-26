@@ -10,6 +10,8 @@ plugins {
     alias(libs.plugins.detekt)
     alias(libs.plugins.aboutlibraries)
     alias(libs.plugins.hilt)
+    // Built-in Gradle plugin — no version catalog entry needed.
+    jacoco
 }
 
 android {
@@ -124,6 +126,15 @@ android {
         unitTests {
             isIncludeAndroidResources = true
             isReturnDefaultValues = true
+            // Per testing-setup skill Step 14: enable Jacoco coverage on
+            // unit tests so ./gradlew jacocoTestReport generates HTML at
+            // app/build/reports/jacoco/jacocoTestReport/html/index.html
+            all {
+                it.jacoco {
+                    includeNoLocationClasses = true
+                    excludes += listOf("jdk.internal.*")
+                }
+            }
         }
         // Disable animations on instrumented tests for stability
         // (animations = TestsAnimations.DISABLED removed — needs different import path; not critical)
@@ -142,6 +153,12 @@ android {
                 }
             }
         }
+    }
+
+    // Per testing-setup skill Step 14: Jacoco coverage for local JVM tests.
+    // ./gradlew :app:jacocoTestReport -> app/build/reports/jacoco/
+    jacoco {
+        toolVersion = "0.8.11"
     }
 
     lint {
