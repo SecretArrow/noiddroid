@@ -3,7 +3,7 @@
 //! `thread_seed << 64 | local_nonce`.
 
 use crate::poseidon2b::poseidon2b_compress;
-use crate::{NoidTemplate, STATE_WIDTH};
+use crate::NoidTemplate;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
 use std::thread;
@@ -177,7 +177,3 @@ mod tests {
         assert!(!lt_target(&small, &small));
     }
 }
-
-// Suppress unused import warning for STATE_WIDTH — it's part of the public API contract.
-#[allow(dead_code)]
-fn _state_width_anchor() { let _ = STATE_WIDTH; }
