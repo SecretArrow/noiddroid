@@ -72,9 +72,7 @@ fun BrutalPanel(
             Box(Modifier.size(12.dp).background(fg))
         }
     }
-    // Squelch unused-colour warning
-    @Suppress("unused")
-    val _ = Color.Transparent
+    // (decorative crosshair mark left as-is — no unused colour suppression needed)
 }
 
 /** Section header — large, bold, all-caps. */
