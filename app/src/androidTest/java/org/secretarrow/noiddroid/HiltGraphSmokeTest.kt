@@ -6,11 +6,11 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import javax.inject.Inject
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.secretarrow.noiddroid.rpc.WalletRepository
-import javax.inject.Inject
 
 /**
  * Verifies that the Hilt graph resolves at runtime on a real device /
@@ -25,7 +25,6 @@ import javax.inject.Inject
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class HiltGraphSmokeTest {
-
     @get:Rule(order = 0)
     val hiltRule = HiltAndroidRule(this)
 
