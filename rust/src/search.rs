@@ -112,9 +112,17 @@ pub fn run_cpu_search(
         .collect();
 
     // Reporter thread — calls the progress callback ~1/sec with the global hashrate.
+    // Raw pointers (*mut c_void) are not Send by default — wrap in a
+    // SendWrapper so the closure can be moved across threads.
+    struct SendCtx(*mut std::os::raw::c_void);
+    unsafe impl Send for SendCtx {}
     let reporter = {
         let stop = Arc::clone(&stop);
         let hash_counter = Arc::clone(&hash_counter);
+        // Only wrap if a callback was actually provided; otherwise drop ctx.
+        let ctx_opt: Option<SendCtx> = if progress_callback.is_some() && !ctx.is_null() {
+            Some(SendCtx(ctx))
+        } else { None };
         thread::spawn(move || {
             let mut last_total: u64 = 0;
             while !stop.load(Ordering::Relaxed) {
@@ -122,8 +130,8 @@ pub fn run_cpu_search(
                 let cur = hash_counter.load(Ordering::Relaxed);
                 let rate = cur.saturating_sub(last_total);
                 last_total = cur;
-                if let Some(cb) = progress_callback {
-                    cb(rate, ctx);
+                if let (Some(cb), Some(c)) = (progress_callback, ctx_opt.as_ref()) {
+                    cb(rate, c.0);
                 }
             }
         })
