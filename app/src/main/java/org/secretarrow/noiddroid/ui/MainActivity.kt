@@ -25,7 +25,6 @@ import org.secretarrow.noiddroid.ui.theme.NoiddroidTheme
  */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         val splash = installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -70,10 +69,16 @@ class MainActivity : ComponentActivity() {
 }
 
 /** Top-level navigation routes — single source of truth. */
-sealed class NavRoute(val path: String) {
+sealed class NavRoute(
+    val path: String,
+) {
     data object Dashboard : NavRoute("dashboard")
+
     data object Miner : NavRoute("miner")
+
     data object Wallet : NavRoute("wallet")
+
     data object Settings : NavRoute("settings")
+
     data object About : NavRoute("about")
 }
