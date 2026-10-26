@@ -3,7 +3,6 @@ package org.secretarrow.noiddroid.service
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import org.secretarrow.noiddroid.service.MiningState
 
 /**
  * Process-wide singleton bus that shares the [MiningService] state with the

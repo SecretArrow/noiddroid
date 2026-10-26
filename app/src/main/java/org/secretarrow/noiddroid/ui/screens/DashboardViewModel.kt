@@ -15,49 +15,48 @@ import org.secretarrow.noiddroid.store.SettingsRepository
 
 @HiltViewModel
 class DashboardViewModel
-@Inject
-constructor(
-    app: Application,
-    private val settings: SettingsRepository,
-) : AndroidViewModel(app) {
+    @Inject
+    constructor(
+        app: Application,
+        private val settings: SettingsRepository,
+    ) : AndroidViewModel(app) {
+        val minerEnabled: StateFlow<Boolean> =
+            settings.minerEnabled
+                .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
-    val minerEnabled: StateFlow<Boolean> =
-        settings.minerEnabled
-            .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+        val useGpu: StateFlow<Boolean> =
+            settings.useGpu
+                .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
-    val useGpu: StateFlow<Boolean> =
-        settings.useGpu
-            .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+        val nodeUrl: StateFlow<String> =
+            settings.nodeRpcUrl
+                .stateIn(viewModelScope, SharingStarted.Eagerly, "")
 
-    val nodeUrl: StateFlow<String> =
-        settings.nodeRpcUrl
-            .stateIn(viewModelScope, SharingStarted.Eagerly, "")
+        val hashRate: StateFlow<Long> = MiningStateBus.hashRate
 
-    val hashRate: StateFlow<Long> = MiningStateBus.hashRate
-
-    /** Toggle the miner on/off. Persists the preference AND starts/stops the
-     *  foreground service so the action takes effect immediately. */
-    fun setMinerEnabled(v: Boolean) {
-        viewModelScope.launch {
-            settings.setMinerEnabled(v)
-            val ctx = getApplication<Application>()
-            if (v) {
-                MiningService.start(ctx)
-            } else {
-                MiningService.stop(ctx)
+        /** Toggle the miner on/off. Persists the preference AND starts/stops the
+         *  foreground service so the action takes effect immediately. */
+        fun setMinerEnabled(v: Boolean) {
+            viewModelScope.launch {
+                settings.setMinerEnabled(v)
+                val ctx = getApplication<Application>()
+                if (v) {
+                    MiningService.start(ctx)
+                } else {
+                    MiningService.stop(ctx)
+                }
             }
         }
     }
-}
 
 /** Reads the live mining state from [MiningStateBus]. */
 @HiltViewModel
 class MinerStatusViewModel
     @Inject
     constructor() : androidx.lifecycle.ViewModel() {
-    val state: StateFlow<org.secretarrow.noiddroid.service.MiningState> = MiningStateBus.state
+        val state: StateFlow<org.secretarrow.noiddroid.service.MiningState> = MiningStateBus.state
 
-    val hashRate: StateFlow<Long> = MiningStateBus.hashRate
+        val hashRate: StateFlow<Long> = MiningStateBus.hashRate
 
-    val blocksFound: StateFlow<Long> = MiningStateBus.blocksFound
-}
+        val blocksFound: StateFlow<Long> = MiningStateBus.blocksFound
+    }

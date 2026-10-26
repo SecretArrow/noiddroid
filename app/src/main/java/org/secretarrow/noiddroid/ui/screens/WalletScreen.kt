@@ -5,7 +5,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -24,51 +23,56 @@ fun WalletScreen(nav: NavController) {
     LaunchedEffect(Unit) { vm.refresh() }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp, vertical = 32.dp),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 32.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
         BrutalSectionTitle("Wallet")
         Text(
-            text = "Connects to your parano1d wallet RPC. All operations require " +
+            text =
+                "Connects to your parano1d wallet RPC. All operations require " +
                     "the wallet's bearer token (set in Settings).",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         when (val s = state) {
-            is WalletUiState.Loading -> BrutalPanel(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    "Fetching holdings…",
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Spacer(Modifier.height(8.dp))
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-            }
-
-            is WalletUiState.NotConfigured -> BrutalPanel(
-                modifier = Modifier.fillMaxWidth(),
-                accent = true,
-            ) {
-                BrutalStat("Balance", "— NOID")
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    "No wallet RPC configured. Open Settings to set the wallet URL " +
-                            "and bearer token.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-
-            is WalletUiState.Error -> BrutalPanel(modifier = Modifier.fillMaxWidth()) {
-                BrutalStat("Error", s.message.take(40))
-                Spacer(Modifier.height(8.dp))
-                OutlinedButton(onClick = { vm.refresh() }, modifier = Modifier.fillMaxWidth()) {
-                    Text("Retry")
+            is WalletUiState.Loading ->
+                BrutalPanel(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        "Fetching holdings…",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 }
-            }
+
+            is WalletUiState.NotConfigured ->
+                BrutalPanel(
+                    modifier = Modifier.fillMaxWidth(),
+                    accent = true,
+                ) {
+                    BrutalStat("Balance", "— NOID")
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "No wallet RPC configured. Open Settings to set the wallet URL " +
+                            "and bearer token.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+
+            is WalletUiState.Error ->
+                BrutalPanel(modifier = Modifier.fillMaxWidth()) {
+                    BrutalStat("Error", s.message.take(40))
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedButton(onClick = { vm.refresh() }, modifier = Modifier.fillMaxWidth()) {
+                        Text("Retry")
+                    }
+                }
 
             is WalletUiState.Loaded -> {
                 if (s.holdings.isEmpty()) {

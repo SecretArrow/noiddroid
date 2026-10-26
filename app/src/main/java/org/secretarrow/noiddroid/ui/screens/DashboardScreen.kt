@@ -24,10 +24,11 @@ fun DashboardScreen(nav: NavController) {
     val hashRate by vm.hashRate.collectAsState()
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp, vertical = 32.dp),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 32.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
         BrutalSectionTitle("Dashboard")
@@ -101,8 +102,9 @@ fun DashboardScreen(nav: NavController) {
     }
 }
 
-private fun formatHash(rate: Long): String = when {
-    rate >= 1_000_000 -> "%.2f MH/s".format(rate / 1_000_000.0)
-    rate >= 1_000 -> "%.2f kH/s".format(rate / 1_000.0)
-    else -> "$rate H/s"
-}
+private fun formatHash(rate: Long): String =
+    when {
+        rate >= 1_000_000 -> "%.2f MH/s".format(rate / 1_000_000.0)
+        rate >= 1_000 -> "%.2f kH/s".format(rate / 1_000.0)
+        else -> "$rate H/s"
+    }
