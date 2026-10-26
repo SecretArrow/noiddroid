@@ -68,7 +68,8 @@ jobs:
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: 17 }
       - uses: gradle/actions/setup-gradle@v4
-        with: { cache-read-only: ${{ github.ref != 'refs/heads/main' }} }
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
       - name: Run unit tests
         run: ./gradlew testDebugUnitTest --no-daemon --stacktrace
@@ -99,7 +100,8 @@ jobs:
         with: { distribution: temurin, java-version: 17 }
 
       - uses: gradle/actions/setup-gradle@v4
-        with: { cache-read-only: ${{ github.ref != 'refs/heads/main' }} }
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -152,7 +154,8 @@ jobs:
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: 17 }
       - uses: gradle/actions/setup-gradle@v4
-        with: { cache-read-only: ${{ github.ref != 'refs/heads/main' }} }
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable

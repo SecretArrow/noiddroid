@@ -28,8 +28,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # The default GITHUB_TOKEN can push back if it has `contents: write`.
-          token: ${{ secrets.GH_PAT != 0 && secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+          # Use the user-configured PAT if present, else fall back to the default token.
+          token: ${{ secrets.GH_PAT != '' && secrets.GH_PAT || secrets.GITHUB_TOKEN }}
           ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
 
@@ -42,9 +42,6 @@ jobs:
 
       - name: Run detekt autoCorrect
         run: ./gradlew detekt --auto-correct --no-daemon || true
-
-      - name: Sort imports
-        run: ./gradlew spotlessApply --no-daemon || true
 
       - name: Check for changes
         id: diff
@@ -72,12 +69,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: format
-    # Only runs if the user has set COPILOT_TOKEN as a repo secret.
-    if: ${{ secrets.COPILOT_TOKEN != 0 }}
+    # Always attempt — the job exits early if no COPILOT_TOKEN secret is set.
+    if: always()
     steps:
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GH_PAT }}
+          token: ${{ secrets.GH_PAT != '' && secrets.GH_PAT || secrets.GITHUB_TOKEN }}
           ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
 
@@ -88,7 +85,20 @@ jobs:
       - name: Re-run lint to find remaining issues
         run: ./gradlew detekt ktlintCheck --no-daemon > lint.txt 2>&1 || true
 
+      - name: Skip AI pass if no COPILOT_TOKEN secret
+        id: has_token
+        env:
+          COPILOT_TOKEN: ${{ secrets.COPILOT_TOKEN }}
+        run: |
+          if [[ -z "$COPILOT_TOKEN" ]]; then
+            echo "has_token=false" >> $GITHUB_OUTPUT
+            echo "No COPILOT_TOKEN secret — skipping AI fix pass."
+          else
+            echo "has_token=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: Use Copilot to fix remaining lint errors
+        if: steps.has_token.outputs.has_token == 'true'
         env:
           COPILOT_TOKEN: ${{ secrets.COPILOT_TOKEN }}
         run: |
