@@ -18,6 +18,7 @@ import org.secretarrow.noiddroid.ui.screens.MinerScreen
 import org.secretarrow.noiddroid.ui.screens.SettingsScreen
 import org.secretarrow.noiddroid.ui.screens.WalletScreen
 import org.secretarrow.noiddroid.ui.theme.NoiddroidTheme
+import org.secretarrow.noiddroid.util.NotificationPermissionController
 
 /**
  * Single-activity host. Splash -> Compose NavHost. Edge-to-edge enabled.
@@ -25,10 +26,33 @@ import org.secretarrow.noiddroid.ui.theme.NoiddroidTheme
  */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    // Registered as a property so the ActivityResultLauncher is initialised
+    // during onCreate (before the activity finishes creating). Must be
+    // constructed BEFORE setContent() is called, otherwise the launcher
+    // can't be used.
+    private lateinit var notificationPermission: NotificationPermissionController
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val splash = installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Register the POST_NOTIFICATIONS runtime-permission controller
+        // (per android/skills android-permissions-security 3-state flow).
+        // On Android 13+ this prompts the user on first launch so the
+        // MiningService foreground notification can actually be posted.
+        notificationPermission = NotificationPermissionController(
+            activity = this,
+            onResult = { granted ->
+                // The skill says: catch SecurityException around protected
+                // calls. The mining service will catch and log on its own.
+                android.util.Log.i(
+                    "MainActivity",
+                    "POST_NOTIFICATIONS granted=$granted",
+                )
+            },
+        )
 
         setContent {
             // Obtain the SplashViewModel via Compose's hiltViewModel() so
@@ -40,6 +64,12 @@ class MainActivity : ComponentActivity() {
             val ready = splashVm.ready.collectAsState()
 
             splash.setKeepOnScreenCondition { !ready.value }
+
+            // Once we're past the splash, fire the permission prompt on
+            // first composition (only does something on API 33+).
+            androidx.compose.runtime.LaunchedEffect(Unit) {
+                notificationPermission.requestIfNeeded()
+            }
 
             NoiddroidTheme(darkTheme = darkMode.value ?: true) {
                 val nav = rememberNavController()

@@ -4,8 +4,7 @@
 
 # ── General Android ─────────────────────────────────────────────────────
 -keepattributes *Annotation*, InnerClasses, Signature, Exceptions, EnclosingMethod, SourceFile, LineNumberTable
--dontwarn android.support.**
--keep class android.support.** { *; }
+# (Removed legacy `android.support.**` rules — noiddroid is 100% AndroidX.)
 
 # ── Hilt / Dagger ──────────────────────────────────────────────────────
 -keep,allowobfuscation,allowshrinking class * extends dagger.hilt.android.lifecycle.HiltViewModel

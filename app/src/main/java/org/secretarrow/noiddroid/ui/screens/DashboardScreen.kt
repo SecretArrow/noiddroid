@@ -23,6 +23,13 @@ fun DashboardScreen(nav: NavController) {
     val nodeUrl by vm.nodeUrl.collectAsState()
     val hashRate by vm.hashRate.collectAsState()
 
+    // Per jetpack-compose-performance skill: wrap derived UI strings in
+    // remember + derivedStateOf so the formatting only recomputes when the
+    // underlying Long actually changes, not on every recomposition pass.
+    val hashRateText by remember {
+        derivedStateOf { formatHash(hashRate) }
+    }
+
     Column(
         modifier =
             Modifier
@@ -50,7 +57,7 @@ fun DashboardScreen(nav: NavController) {
             if (minerEnabled && hashRate > 0) {
                 Spacer(Modifier.height(12.dp))
                 Text(
-                    text = formatHash(hashRate),
+                    text = hashRateText,
                     style = MaterialTheme.typography.displaySmall,
                     fontFamily = MaterialTheme.typography.labelSmall.fontFamily,
                     fontWeight = FontWeight.Black,
