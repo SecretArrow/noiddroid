@@ -108,9 +108,10 @@ jobs:
         with:
           targets: aarch64-linux-android
 
-      - name: Setup Android NDK
-        uses: nttoddt/setup-android-ndk@v1
-        with: { ndk-version: r26b, local-cache: true }
+      - name: Setup Android SDK + NDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'ndk;26.1.10909125'
 
       - name: Cache cargo
         uses: actions/cache@v4
@@ -124,7 +125,7 @@ jobs:
 
       - name: Build Rust core (aarch64-linux-android)
         env:
-          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
+          ANDROID_NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/26.1.10909125
         run: bash scripts/build-prepare.sh
 
       - name: Compile Vulkan shaders
@@ -160,8 +161,9 @@ jobs:
       - name: Setup Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with: { targets: aarch64-linux-android }
-      - uses: nttoddt/setup-android-ndk@v1
-        with: { ndk-version: r26b }
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'ndk;26.1.10909125'
 
       - name: Cache cargo
         uses: actions/cache@v4
@@ -174,7 +176,7 @@ jobs:
 
       - name: Build Rust core
         env:
-          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
+          ANDROID_NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/26.1.10909125
         run: bash scripts/build-prepare.sh
 
       - name: Run instrumented tests on emulator (Pixel 6 / API 34)
