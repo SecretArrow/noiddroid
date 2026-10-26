@@ -220,7 +220,8 @@ dependencies {
 
 ksp {
     arg("dagger.fastInit", "enabled")
-    arg("dagger.hilt.android.internal.useAggregatingComponent", "true")
+    // 'dagger.hilt.android.internal.useAggregatingComponent' was rejected
+    // by Hilt 2.52 as not a recognised option — removed.
 }
 
 detekt {
