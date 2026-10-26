@@ -1,7 +1,9 @@
 package org.secretarrow.noiddroid.rpc
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.buildJsonArray
 
 // ── parano1d-miner worker RPC ──────────────────────────────────────────
 // Per https://docs.parano1d.org/mining: worker talks to node over HTTP
@@ -36,7 +38,7 @@ data class JsonRpcRequest(
     val jsonrpc: String = "2.0",
     val id: Long,
     val method: String,
-    val params: JsonElement = JsonArray(emptyList()),
+    val params: JsonElement = buildJsonArray {},
 )
 
 @Serializable

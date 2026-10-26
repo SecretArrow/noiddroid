@@ -28,45 +28,41 @@ class WalletRepository
         suspend fun getNativeProtocol(bearer: String?): JsonElement =
             callExpecting(WalletMethod.GET_NATIVE_PROTOCOL, buildJsonArray {}, bearer)
 
-        suspend fun walletGetNativeHoldings(
-            cursor: String? = null,
-            limit: Int = 50,
-            bearer: String? = null,
-        ): JsonElement {
-            val params =
-                buildJsonArray {
-                    add(
-                        buildJsonObject {
-                            if (cursor != null) put("cursor", cursor)
-                            put("limit", limit)
-                        },
-                    )
-                }
-            return callExpecting(WalletMethod.WALLET_GET_NATIVE_HOLDINGS, params, bearer)
+
+    suspend fun walletGetNativeHoldings(
+        cursor: String? = null,
+        limit: Int = 50,
+        bearer: String? = null,
+    ): JsonElement {
+        val params = buildJsonArray {
+            add(
+                buildJsonObject {
+                    if (cursor != null) put("cursor", JsonPrimitive(cursor))
+                    put("limit", JsonPrimitive(limit))
+                },
+            )
         }
 
         suspend fun walletNativePending(bearer: String?): JsonElement =
             callExpecting(WalletMethod.WALLET_NATIVE_PENDING, buildJsonArray {}, bearer)
 
-        suspend fun walletPreviewNative(
-            action: String,
-            assetId: String,
-            amount: String,
-            validUntil: Long,
-            bearer: String?,
-        ): JsonElement {
-            val params =
-                buildJsonArray {
-                    add(
-                        buildJsonObject {
-                            put("action", action)
-                            put("asset_id", assetId)
-                            put("gross_input", amount)
-                            put("valid_until", validUntil)
-                        },
-                    )
-                }
-            return callExpecting(WalletMethod.WALLET_PREVIEW_NATIVE, params, bearer)
+
+    suspend fun walletPreviewNative(
+        action: String,
+        assetId: String,
+        amount: String,
+        validUntil: Long,
+        bearer: String?,
+    ): JsonElement {
+        val params = buildJsonArray {
+            add(
+                buildJsonObject {
+                    put("action", JsonPrimitive(action))
+                    put("asset_id", JsonPrimitive(assetId))
+                    put("gross_input", JsonPrimitive(amount))
+                    put("valid_until", JsonPrimitive(validUntil))
+                },
+            )
         }
 
         suspend fun walletSubmitNative(

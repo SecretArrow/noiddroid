@@ -13,7 +13,9 @@ import dagger.hilt.android.EntryPointAccessors
 class WorkManagerInitializer : Initializer<WorkManager> {
     override fun create(context: Context): WorkManager {
         val ep = EntryPointAccessors.fromApplication(context, WorkManagerEntryPoint::class.java)
-        WorkManager.initialize(context, ep.config())
+        // ep.config() returns Configuration.Provider; we call createConfiguration()
+        // to materialise a Configuration instance acceptable to WorkManager.initialize.
+        WorkManager.initialize(context, ep.config().createConfiguration())
         return WorkManager.getInstance(context)
     }
 
