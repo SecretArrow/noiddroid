@@ -4,10 +4,8 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ServiceInfo
 import android.os.BatteryManager
 import android.os.Build
 import android.os.IBinder
@@ -15,7 +13,6 @@ import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -45,8 +42,8 @@ import org.secretarrow.noiddroid.store.SettingsRepository
  */
 @AndroidEntryPoint
 class MiningService : LifecycleService() {
-
     @Inject lateinit var settings: SettingsRepository
+
     @Inject lateinit var mining: MiningRepository
 
     private var minerHandle: Long = 0L
@@ -71,13 +68,17 @@ class MiningService : LifecycleService() {
         startGuards()
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(
+        intent: Intent?,
+        flags: Int,
+        startId: Int,
+    ): Int {
         super.onStartCommand(intent, flags, startId)
         when (intent?.action) {
             ACTION_START -> startMining()
-            ACTION_STOP  -> stopMining()
+            ACTION_STOP -> stopMining()
             ACTION_PAUSE -> pauseMining("manual")
-            else         -> startMining()
+            else -> startMining()
         }
         return START_STICKY
     }
@@ -96,64 +97,70 @@ class MiningService : LifecycleService() {
         if (searchJob?.isActive == true) return
         acquireWakeLock()
 
-        searchJob = ioScope.launch {
-            val useGpu = settings.useGpu.first()
-            val workerId = MiningRepository.WORKER_ID
-            Log.i(TAG, "Mining start: useGpu=$useGpu, worker=$workerId")
+        searchJob =
+            ioScope.launch {
+                val useGpu = settings.useGpu.first()
+                val workerId = MiningRepository.WORKER_ID
+                Log.i(TAG, "Mining start: useGpu=$useGpu, worker=$workerId")
 
-            while (isActive && minerHandle != 0L) {
-                val template = try {
-                    mining.getBlockTemplate()
-                } catch (t: Throwable) {
-                    _state.value = MiningState.Error("getTemplate: ${t.message}")
-                    delay(RETRY_MS)
-                    continue
-                }
-                _state.value = MiningState.Hashing(rate = 0, template = template)
+                while (isActive && minerHandle != 0L) {
+                    val template =
+                        try {
+                            mining.getBlockTemplate()
+                        } catch (t: Throwable) {
+                            _state.value = MiningState.Error("getTemplate: ${t.message}")
+                            delay(RETRY_MS)
+                            continue
+                        }
+                    _state.value = MiningState.Hashing(rate = 0, template = template)
 
-                val result = if (useGpu) {
-                    val r = MinerNative.searchGpu(
-                        header = template.header.hexDecode(),
-                        target = template.target.hexDecode(),
-                        templateId = template.templateId.toLong(),
-                        onProgress = { rate ->
-                            _state.value = MiningState.Hashing(rate, template)
-                            updateNotification(rate)
-                        },
-                    )
-                    if (r.rc == -1) {
-                        // Vulkan unavailable — fall back to CPU
-                        MinerNative.searchCpu(
-                            handle = minerHandle,
-                            header = template.header.hexDecode(),
-                            target = template.target.hexDecode(),
-                            templateId = template.templateId.toLong(),
-                            onProgress = { rate ->
-                                _state.value = MiningState.Hashing(rate, template)
-                                updateNotification(rate)
-                            },
-                        )
-                    } else r
-                } else {
-                    MinerNative.searchCpu(
-                        handle = minerHandle,
-                        header = template.header.hexDecode(),
-                        target = template.target.hexDecode(),
-                        templateId = template.templateId.toLong(),
-                        onProgress = { rate ->
-                            _state.value = MiningState.Hashing(rate, template)
-                            updateNotification(rate)
-                        },
-                    )
-                }
+                    val result =
+                        if (useGpu) {
+                            val r =
+                                MinerNative.searchGpu(
+                                    header = template.header.hexDecode(),
+                                    target = template.target.hexDecode(),
+                                    templateId = template.templateId.toLong(),
+                                    onProgress = { rate ->
+                                        _state.value = MiningState.Hashing(rate, template)
+                                        updateNotification(rate)
+                                    },
+                                )
+                            if (r.rc == -1) {
+                                // Vulkan unavailable — fall back to CPU
+                                MinerNative.searchCpu(
+                                    handle = minerHandle,
+                                    header = template.header.hexDecode(),
+                                    target = template.target.hexDecode(),
+                                    templateId = template.templateId.toLong(),
+                                    onProgress = { rate ->
+                                        _state.value = MiningState.Hashing(rate, template)
+                                        updateNotification(rate)
+                                    },
+                                )
+                            } else {
+                                r
+                            }
+                        } else {
+                            MinerNative.searchCpu(
+                                handle = minerHandle,
+                                header = template.header.hexDecode(),
+                                target = template.target.hexDecode(),
+                                templateId = template.templateId.toLong(),
+                                onProgress = { rate ->
+                                    _state.value = MiningState.Hashing(rate, template)
+                                    updateNotification(rate)
+                                },
+                            )
+                        }
 
-                if (result.found) {
-                    onSubmitSolution(template, result)
-                } else {
-                    _state.value = MiningState.Idle
+                    if (result.found) {
+                        onSubmitSolution(template, result)
+                    } else {
+                        _state.value = MiningState.Idle
+                    }
                 }
             }
-        }
     }
 
     private fun stopMining() {
@@ -170,17 +177,22 @@ class MiningService : LifecycleService() {
         updateNotification(0, paused = reason)
     }
 
-    private suspend fun onSubmitSolution(template: BlockTemplate, result: SearchResult) {
+    private suspend fun onSubmitSolution(
+        template: BlockTemplate,
+        result: SearchResult,
+    ) {
         try {
-            val submission = mining.submitBlock(
-                templateId = template.templateId,
-                nonceHex = result.nonceBytes.toHex(),
-            )
-            _state.value = if (submission.accepted) {
-                MiningState.BlockFound(template.templateId)
-            } else {
-                MiningState.Error("Rejected: ${submission.reason ?: "no reason"}")
-            }
+            val submission =
+                mining.submitBlock(
+                    templateId = template.templateId,
+                    nonceHex = result.nonceBytes.toHex(),
+                )
+            _state.value =
+                if (submission.accepted) {
+                    MiningState.BlockFound(template.templateId)
+                } else {
+                    MiningState.Error("Rejected: ${submission.reason ?: "no reason"}")
+                }
         } catch (t: Throwable) {
             _state.value = MiningState.Error("submitBlock: ${t.message}")
         }
@@ -188,22 +200,23 @@ class MiningService : LifecycleService() {
 
     // ── Battery + thermal guards ─────────────────────────────────────
     private fun startGuards() {
-        guardJob = ioScope.launch {
-            while (isActive) {
-                val bm = getSystemService(BATTERY_SERVICE) as BatteryManager
-                val pct = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
-                val battThreshold = settings.batteryGuardThreshold.first()
-                if (pct <= battThreshold && !isCharging()) {
-                    pauseMining("battery $pct%")
+        guardJob =
+            ioScope.launch {
+                while (isActive) {
+                    val bm = getSystemService(BATTERY_SERVICE) as BatteryManager
+                    val pct = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+                    val battThreshold = settings.batteryGuardThreshold.first()
+                    if (pct <= battThreshold && !isCharging()) {
+                        pauseMining("battery $pct%")
+                    }
+                    val thermal = thermalState()
+                    val thermalThreshold = settings.thermalGuardThreshold.first()
+                    if (thermal >= thermalThreshold) {
+                        pauseMining("thermal ${thermal}C")
+                    }
+                    delay(GUARD_INTERVAL_MS)
                 }
-                val thermal = thermalState()
-                val thermalThreshold = settings.thermalGuardThreshold.first()
-                if (thermal >= thermalThreshold) {
-                    pauseMining("thermal ${thermal}C")
-                }
-                delay(GUARD_INTERVAL_MS)
             }
-        }
     }
 
     private fun isCharging(): Boolean {
@@ -217,13 +230,13 @@ class MiningService : LifecycleService() {
         // the DEVICE_POWER permission which is restricted.
         val pm = getSystemService(POWER_SERVICE) as PowerManager
         return when (pm.currentThermalStatus) {
-            PowerManager.THERMAL_STATUS_LIGHT       -> 35f
-            PowerManager.THERMAL_STATUS_MODERATE   -> 38f
-            PowerManager.THERMAL_STATUS_SEVERE     -> 42f
-            PowerManager.THERMAL_STATUS_CRITICAL   -> 45f
+            PowerManager.THERMAL_STATUS_LIGHT -> 35f
+            PowerManager.THERMAL_STATUS_MODERATE -> 38f
+            PowerManager.THERMAL_STATUS_SEVERE -> 42f
+            PowerManager.THERMAL_STATUS_CRITICAL -> 45f
             PowerManager.THERMAL_STATUS_EMERGENCY -> 48f
-            PowerManager.THERMAL_STATUS_SHUTDOWN   -> 50f
-            else                                    -> 30f
+            PowerManager.THERMAL_STATUS_SHUTDOWN -> 50f
+            else -> 30f
         }
     }
 
@@ -239,40 +252,57 @@ class MiningService : LifecycleService() {
     private fun ensureChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val mgr = getSystemService(NotificationManager::class.java)
-            val ch = NotificationChannel(
-                CHANNEL_ID,
-                getString(R.string.mining_channel_name),
-                NotificationManager.IMPORTANCE_LOW,
-            ).apply { description = getString(R.string.mining_channel_desc) }
+            val ch =
+                NotificationChannel(
+                    CHANNEL_ID,
+                    getString(R.string.mining_channel_name),
+                    NotificationManager.IMPORTANCE_LOW,
+                ).apply { description = getString(R.string.mining_channel_desc) }
             mgr.createNotificationChannel(ch)
         }
     }
 
-    private fun buildNotification(text: String, hashRate: Long, paused: String? = null): Notification {
-        val tap = PendingIntent.getActivity(
-            this, 0,
-            Intent(this, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-            },
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-        )
-        val pause = PendingIntent.getService(
-            this, 1,
-            Intent(this, MiningService::class.java).setAction(ACTION_PAUSE),
-            PendingIntent.FLAG_IMMUTABLE,
-        )
-        val stop = PendingIntent.getService(
-            this, 2,
-            Intent(this, MiningService::class.java).setAction(ACTION_STOP),
-            PendingIntent.FLAG_IMMUTABLE,
-        )
-        val body = when {
-            paused != null -> getString(R.string.mining_notification_text_paused, paused)
-            hashRate > 0   -> getString(R.string.mining_notification_text_active,
-                                       formatHash(hashRate), MinerNative.loaded.let { if (it) "GPU" else "CPU" })
-            else           -> getString(R.string.mining_notification_text_idle)
-        }
-        return NotificationCompat.Builder(this, CHANNEL_ID)
+    private fun buildNotification(
+        text: String,
+        hashRate: Long,
+        paused: String? = null,
+    ): Notification {
+        val tap =
+            PendingIntent.getActivity(
+                this,
+                0,
+                Intent(this, MainActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+                },
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+            )
+        val pause =
+            PendingIntent.getService(
+                this,
+                1,
+                Intent(this, MiningService::class.java).setAction(ACTION_PAUSE),
+                PendingIntent.FLAG_IMMUTABLE,
+            )
+        val stop =
+            PendingIntent.getService(
+                this,
+                2,
+                Intent(this, MiningService::class.java).setAction(ACTION_STOP),
+                PendingIntent.FLAG_IMMUTABLE,
+            )
+        val body =
+            when {
+                paused != null -> getString(R.string.mining_notification_text_paused, paused)
+                hashRate > 0 ->
+                    getString(
+                        R.string.mining_notification_text_active,
+                        formatHash(hashRate),
+                        MinerNative.loaded.let { if (it) "GPU" else "CPU" },
+                    )
+                else -> getString(R.string.mining_notification_text_idle)
+            }
+        return NotificationCompat
+            .Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_splash_logo)
             .setContentTitle(getString(R.string.mining_notification_title))
             .setContentText(body)
@@ -284,16 +314,21 @@ class MiningService : LifecycleService() {
             .build()
     }
 
-    private fun updateNotification(rate: Long, idle: Boolean = false, paused: String? = null) {
+    private fun updateNotification(
+        rate: Long,
+        idle: Boolean = false,
+        paused: String? = null,
+    ) {
         val mgr = getSystemService(NotificationManager::class.java)
         mgr.notify(NOTIF_ID, buildNotification("", rate, paused))
     }
 
-    private fun formatHash(rate: Long): String = when {
-        rate >= 1_000_000 -> "%.2f MH/s".format(rate / 1_000_000.0)
-        rate >= 1_000    -> "%.2f kH/s".format(rate / 1_000.0)
-        else             -> "$rate H/s"
-    }
+    private fun formatHash(rate: Long): String =
+        when {
+            rate >= 1_000_000 -> "%.2f MH/s".format(rate / 1_000_000.0)
+            rate >= 1_000 -> "%.2f kH/s".format(rate / 1_000.0)
+            else -> "$rate H/s"
+        }
 
     // ── Hex helpers (kept here to avoid an extra util file) ──────────
     private fun String.hexDecode(): ByteArray {
@@ -325,13 +360,16 @@ class MiningService : LifecycleService() {
         private val HEX = "0123456789abcdef".toCharArray()
 
         const val ACTION_START = "org.secretarrow.noiddroid.START"
-        const val ACTION_STOP  = "org.secretarrow.noiddroid.STOP"
+        const val ACTION_STOP = "org.secretarrow.noiddroid.STOP"
         const val ACTION_PAUSE = "org.secretarrow.noiddroid.PAUSE"
 
         fun start(ctx: Context) {
             val i = Intent(ctx, MiningService::class.java).setAction(ACTION_START)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ctx.startForegroundService(i)
-            else ctx.startService(i)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                ctx.startForegroundService(i)
+            } else {
+                ctx.startService(i)
+            }
         }
 
         fun stop(ctx: Context) {
@@ -350,8 +388,21 @@ class MiningService : LifecycleService() {
  */
 sealed class MiningState {
     data object Idle : MiningState()
-    data class Hashing(val rate: Long, val template: BlockTemplate) : MiningState()
-    data class Paused(val reason: String) : MiningState()
-    data class BlockFound(val templateId: String) : MiningState()
-    data class Error(val message: String) : MiningState()
+
+    data class Hashing(
+        val rate: Long,
+        val template: BlockTemplate,
+    ) : MiningState()
+
+    data class Paused(
+        val reason: String,
+    ) : MiningState()
+
+    data class BlockFound(
+        val templateId: String,
+    ) : MiningState()
+
+    data class Error(
+        val message: String,
+    ) : MiningState()
 }

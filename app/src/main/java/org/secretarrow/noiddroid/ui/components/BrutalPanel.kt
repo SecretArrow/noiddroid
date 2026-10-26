@@ -25,26 +25,39 @@ fun BrutalPanel(
     accent: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val bg = if (accent) MaterialTheme.colorScheme.primary
-             else MaterialTheme.colorScheme.surface
-    val fg = if (accent) MaterialTheme.colorScheme.onPrimary
-             else MaterialTheme.colorScheme.onSurface
-    val border = if (accent) MaterialTheme.colorScheme.primary
-                 else MaterialTheme.colorScheme.outline
+    val bg =
+        if (accent) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.surface
+        }
+    val fg =
+        if (accent) {
+            MaterialTheme.colorScheme.onPrimary
+        } else {
+            MaterialTheme.colorScheme.onSurface
+        }
+    val border =
+        if (accent) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.outline
+        }
 
     Box(
-        modifier = modifier
-            .background(bg, RoundedCornerShape(0.dp))
-            .border(
-                BorderStroke(2.dp, border),
-                RoundedCornerShape(0.dp),
-            )
-            .padding(0.dp),
+        modifier =
+            modifier
+                .background(bg, RoundedCornerShape(0.dp))
+                .border(
+                    BorderStroke(2.dp, border),
+                    RoundedCornerShape(0.dp),
+                ).padding(0.dp),
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalAlignment = Alignment.Start,
         ) {
@@ -60,7 +73,8 @@ fun BrutalPanel(
         }
     }
     // Squelch unused-colour warning
-    @Suppress("unused") val _ = Color.Transparent
+    @Suppress("unused")
+    val _ = Color.Transparent
 }
 
 /** Section header — large, bold, all-caps. */

@@ -14,31 +14,39 @@ import org.secretarrow.noiddroid.service.MiningState
 import org.secretarrow.noiddroid.store.SettingsRepository
 
 @HiltViewModel
-class DashboardViewModel @Inject constructor(
-    private val settings: SettingsRepository,
-) : ViewModel() {
+class DashboardViewModel
+    @Inject
+    constructor(
+        private val settings: SettingsRepository,
+    ) : ViewModel() {
+        val minerEnabled: StateFlow<Boolean> =
+            settings.minerEnabled
+                .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
-    val minerEnabled: StateFlow<Boolean> = settings.minerEnabled
-        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+        val useGpu: StateFlow<Boolean> =
+            settings.useGpu
+                .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
-    val useGpu: StateFlow<Boolean> = settings.useGpu
-        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+        val nodeUrl: StateFlow<String> =
+            settings.nodeRpcUrl
+                .stateIn(viewModelScope, SharingStarted.Eagerly, "")
 
-    val nodeUrl: StateFlow<String> = settings.nodeRpcUrl
-        .stateIn(viewModelScope, SharingStarted.Eagerly, "")
-
-    fun setMinerEnabled(v: Boolean) {
-        viewModelScope.launch {
-            settings.setMinerEnabled(v)
+        fun setMinerEnabled(v: Boolean) {
+            viewModelScope.launch {
+                settings.setMinerEnabled(v)
+            }
         }
     }
-}
 
 /** Eagerly-broadcast mining state — surfaces the foreground service state to UI. */
 @HiltViewModel
-class MinerStatusViewModel @Inject constructor() : ViewModel() {
-    private val _state = MutableStateFlow<MiningState>(MiningState.Idle)
-    val state: StateFlow<MiningState> = _state.asStateFlow()
+class MinerStatusViewModel
+    @Inject
+    constructor() : ViewModel() {
+        private val _state = MutableStateFlow<MiningState>(MiningState.Idle)
+        val state: StateFlow<MiningState> = _state.asStateFlow()
 
-    fun update(state: MiningState) { _state.value = state }
-}
+        fun update(state: MiningState) {
+            _state.value = state
+        }
+    }

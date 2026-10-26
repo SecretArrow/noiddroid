@@ -5,7 +5,6 @@ import androidx.startup.Initializer
 import androidx.work.Configuration
 import androidx.work.WorkManager
 import dagger.hilt.android.EntryPointAccessors
-import org.secretarrow.noiddroid.NoiddroidApp
 
 /**
  * Defers WorkManager init until after Hilt is ready, so [MiningResumeWorker]

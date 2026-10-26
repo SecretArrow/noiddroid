@@ -9,7 +9,6 @@ import retrofit2.http.POST
  * (per spec at https://docs.parano1d.org/reference/native-rpc).
  */
 interface WalletApi {
-
     @POST(".")
     suspend fun call(
         @Header("Authorization") bearer: String?,

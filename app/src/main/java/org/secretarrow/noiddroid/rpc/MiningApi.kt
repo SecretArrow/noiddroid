@@ -9,7 +9,6 @@ import retrofit2.http.POST
  * Per spec: bearer token authorises ONLY getBlockTemplate + submitBlock.
  */
 interface MiningApi {
-
     @POST("v1/template")
     suspend fun getBlockTemplate(
         @Header("Authorization") bearer: String,

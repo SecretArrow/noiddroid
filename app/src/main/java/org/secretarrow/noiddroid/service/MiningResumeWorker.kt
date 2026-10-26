@@ -13,12 +13,14 @@ import dagger.assisted.AssistedInject
  * configured and the miner was previously enabled.
  */
 @HiltWorker
-class MiningResumeWorker @AssistedInject constructor(
-    @Assisted appContext: Context,
-    @Assisted params: WorkerParameters,
-) : CoroutineWorker(appContext, params) {
-    override suspend fun doWork(): Result {
-        MiningService.start(applicationContext)
-        return Result.success()
+class MiningResumeWorker
+    @AssistedInject
+    constructor(
+        @Assisted appContext: Context,
+        @Assisted params: WorkerParameters,
+    ) : CoroutineWorker(appContext, params) {
+        override suspend fun doWork(): Result {
+            MiningService.start(applicationContext)
+            return Result.success()
+        }
     }
-}

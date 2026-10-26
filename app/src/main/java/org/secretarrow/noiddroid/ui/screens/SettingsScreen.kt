@@ -7,9 +7,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -27,46 +27,69 @@ import org.secretarrow.noiddroid.ui.components.BrutalPanel
 import org.secretarrow.noiddroid.ui.components.BrutalSectionTitle
 
 @HiltViewModel
-class SettingsViewModel @Inject constructor(
-    private val settings: SettingsRepository,
-) : ViewModel() {
-    val nodeUrl: StateFlow<String> = settings.nodeRpcUrl
-        .stateIn(viewModelScope, SharingStarted.Eagerly, SettingsRepository.DEFAULT_NODE_URL)
-    val walletUrl: StateFlow<String> = settings.walletRpcUrl
-        .stateIn(viewModelScope, SharingStarted.Eagerly, SettingsRepository.DEFAULT_WALLET_URL)
-    val bearer: StateFlow<String> = settings.bearerToken
-        .map { it ?: "" }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, "")
-    val useGpu: StateFlow<Boolean> = settings.useGpu
-        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
-    val cpuThreads: StateFlow<Int> = settings.cpuThreads
-        .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
-    val payout: StateFlow<String> = settings.payoutAddress
-        .map { it ?: "" }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, "")
-    val darkMode: StateFlow<Boolean> = settings.darkMode
-        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
-    val battThreshold: StateFlow<Int> = settings.batteryGuardThreshold
-        .stateIn(viewModelScope, SharingStarted.Eagerly, 20)
-    val thermalThreshold: StateFlow<Int> = settings.thermalGuardThreshold
-        .stateIn(viewModelScope, SharingStarted.Eagerly, 40)
-    val wakeLock: StateFlow<Boolean> = settings.wakeLockEnabled
-        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
-    val schedule: StateFlow<String> = settings.scheduledWindows
-        .stateIn(viewModelScope, SharingStarted.Eagerly, "")
+class SettingsViewModel
+    @Inject
+    constructor(
+        private val settings: SettingsRepository,
+    ) : ViewModel() {
+        val nodeUrl: StateFlow<String> =
+            settings.nodeRpcUrl
+                .stateIn(viewModelScope, SharingStarted.Eagerly, SettingsRepository.DEFAULT_NODE_URL)
+        val walletUrl: StateFlow<String> =
+            settings.walletRpcUrl
+                .stateIn(viewModelScope, SharingStarted.Eagerly, SettingsRepository.DEFAULT_WALLET_URL)
+        val bearer: StateFlow<String> =
+            settings.bearerToken
+                .map { it ?: "" }
+                .stateIn(viewModelScope, SharingStarted.Eagerly, "")
+        val useGpu: StateFlow<Boolean> =
+            settings.useGpu
+                .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+        val cpuThreads: StateFlow<Int> =
+            settings.cpuThreads
+                .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
+        val payout: StateFlow<String> =
+            settings.payoutAddress
+                .map { it ?: "" }
+                .stateIn(viewModelScope, SharingStarted.Eagerly, "")
+        val darkMode: StateFlow<Boolean> =
+            settings.darkMode
+                .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+        val battThreshold: StateFlow<Int> =
+            settings.batteryGuardThreshold
+                .stateIn(viewModelScope, SharingStarted.Eagerly, 20)
+        val thermalThreshold: StateFlow<Int> =
+            settings.thermalGuardThreshold
+                .stateIn(viewModelScope, SharingStarted.Eagerly, 40)
+        val wakeLock: StateFlow<Boolean> =
+            settings.wakeLockEnabled
+                .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+        val schedule: StateFlow<String> =
+            settings.scheduledWindows
+                .stateIn(viewModelScope, SharingStarted.Eagerly, "")
 
-    fun setNodeUrl(v: String)            = viewModelScope.launch { settings.setNodeRpcUrl(v) }
-    fun setWalletUrl(v: String)          = viewModelScope.launch { settings.setWalletRpcUrl(v) }
-    fun setBearer(v: String)             = viewModelScope.launch { settings.setBearerToken(v.ifBlank { null }) }
-    fun setUseGpu(v: Boolean)            = viewModelScope.launch { settings.setUseGpu(v) }
-    fun setCpuThreads(v: Int)            = viewModelScope.launch { settings.setCpuThreads(v) }
-    fun setPayout(v: String)             = viewModelScope.launch { settings.setPayoutAddress(v.ifBlank { null }) }
-    fun setDarkMode(v: Boolean)          = viewModelScope.launch { settings.setDarkMode(v) }
-    fun setBattThreshold(v: Int)         = viewModelScope.launch { settings.setBatteryGuardThreshold(v) }
-    fun setThermalThreshold(v: Int)      = viewModelScope.launch { settings.setThermalGuardThreshold(v) }
-    fun setWakeLock(v: Boolean)          = viewModelScope.launch { settings.setWakeLockEnabled(v) }
-    fun setSchedule(v: String)           = viewModelScope.launch { settings.setScheduledWindows(v) }
-}
+        fun setNodeUrl(v: String) = viewModelScope.launch { settings.setNodeRpcUrl(v) }
+
+        fun setWalletUrl(v: String) = viewModelScope.launch { settings.setWalletRpcUrl(v) }
+
+        fun setBearer(v: String) = viewModelScope.launch { settings.setBearerToken(v.ifBlank { null }) }
+
+        fun setUseGpu(v: Boolean) = viewModelScope.launch { settings.setUseGpu(v) }
+
+        fun setCpuThreads(v: Int) = viewModelScope.launch { settings.setCpuThreads(v) }
+
+        fun setPayout(v: String) = viewModelScope.launch { settings.setPayoutAddress(v.ifBlank { null }) }
+
+        fun setDarkMode(v: Boolean) = viewModelScope.launch { settings.setDarkMode(v) }
+
+        fun setBattThreshold(v: Int) = viewModelScope.launch { settings.setBatteryGuardThreshold(v) }
+
+        fun setThermalThreshold(v: Int) = viewModelScope.launch { settings.setThermalGuardThreshold(v) }
+
+        fun setWakeLock(v: Boolean) = viewModelScope.launch { settings.setWakeLockEnabled(v) }
+
+        fun setSchedule(v: String) = viewModelScope.launch { settings.setScheduledWindows(v) }
+    }
 
 @Composable
 fun SettingsScreen(nav: NavController) {
@@ -84,10 +107,11 @@ fun SettingsScreen(nav: NavController) {
     val schedule by vm.schedule.collectAsState()
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp, vertical = 32.dp),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 32.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
         BrutalSectionTitle("Settings")
@@ -133,8 +157,10 @@ fun SettingsScreen(nav: NavController) {
                 Switch(checked = useGpu, onCheckedChange = vm::setUseGpu)
             }
             Spacer(Modifier.height(8.dp))
-            Text("CPU threads (0 = auto-detect): $cpuThreads",
-                 style = MaterialTheme.typography.bodyMedium)
+            Text(
+                "CPU threads (0 = auto-detect): $cpuThreads",
+                style = MaterialTheme.typography.bodyMedium,
+            )
             Slider(
                 value = cpuThreads.toFloat(),
                 onValueChange = { vm.setCpuThreads(it.toInt()) },
@@ -162,7 +188,7 @@ fun SettingsScreen(nav: NavController) {
                 steps = 45,
             )
             Spacer(Modifier.height(8.dp))
-            Text("Pause above thermal: ${thermalThreshold}°C")
+            Text("Pause above thermal: $thermalThreshold°C")
             Slider(
                 value = thermalThreshold.toFloat(),
                 onValueChange = { vm.setThermalThreshold(it.toInt()) },

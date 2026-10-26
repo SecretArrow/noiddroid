@@ -12,13 +12,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import org.secretarrow.noiddroid.ui.screens.AboutScreen
 import org.secretarrow.noiddroid.ui.screens.DashboardScreen
 import org.secretarrow.noiddroid.ui.screens.MinerScreen
 import org.secretarrow.noiddroid.ui.screens.SettingsScreen
 import org.secretarrow.noiddroid.ui.screens.WalletScreen
 import org.secretarrow.noiddroid.ui.theme.NoiddroidTheme
-import javax.inject.Inject
 
 /**
  * Single-activity host. Splash -> Compose NavHost. Edge-to-edge enabled.
@@ -26,7 +26,6 @@ import javax.inject.Inject
  */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
     @Inject
     lateinit var splashViewModel: SplashViewModel
 
@@ -72,10 +71,16 @@ class MainActivity : ComponentActivity() {
 }
 
 /** Top-level navigation routes — single source of truth. */
-sealed class NavRoute(val path: String) {
+sealed class NavRoute(
+    val path: String,
+) {
     data object Dashboard : NavRoute("dashboard")
+
     data object Miner : NavRoute("miner")
+
     data object Wallet : NavRoute("wallet")
+
     data object Settings : NavRoute("settings")
+
     data object About : NavRoute("about")
 }

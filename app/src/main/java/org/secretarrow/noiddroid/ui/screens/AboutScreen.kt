@@ -17,10 +17,11 @@ import org.secretarrow.noiddroid.ui.components.BrutalStat
 @Composable
 fun AboutScreen(nav: NavController) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp, vertical = 32.dp),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 32.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
         BrutalSectionTitle("About")
@@ -33,19 +34,22 @@ fun AboutScreen(nav: NavController) {
         BrutalPanel(modifier = Modifier.fillMaxWidth()) {
             BrutalStat("Version", BuildConfig.VERSION_NAME)
             Spacer(Modifier.height(8.dp))
-            Text("Build: ${BuildConfig.BUILD_TYPE}",
-                 style = MaterialTheme.typography.labelMedium)
+            Text(
+                "Build: ${BuildConfig.BUILD_TYPE}",
+                style = MaterialTheme.typography.labelMedium,
+            )
         }
 
         BrutalPanel(modifier = Modifier.fillMaxWidth()) {
             Text("Architecture", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(8.dp))
             Text(
-                text = "Kotlin UI → JNI → Rust core (libnoiddroid_core.a)\n" +
-                       "               → Vulkan compute shim\n" +
-                       "Network: Retrofit + kotlinx.serialization JSON-RPC 2.0\n" +
-                       "Background: Foreground service + WorkManager + Hilt\n" +
-                       "Persist: Preferences DataStore\n",
+                text =
+                    "Kotlin UI → JNI → Rust core (libnoiddroid_core.a)\n" +
+                        "               → Vulkan compute shim\n" +
+                        "Network: Retrofit + kotlinx.serialization JSON-RPC 2.0\n" +
+                        "Background: Foreground service + WorkManager + Hilt\n" +
+                        "Persist: Preferences DataStore\n",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -55,11 +59,12 @@ fun AboutScreen(nav: NavController) {
             Text("Mining protocol", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(8.dp))
             Text(
-                text = "• Worker pulls immutable 80-byte header schedule + 32-byte target\n" +
-                       "• Searches 128-bit Poseidon2b nonce (CPU threads or Vulkan workgroups)\n" +
-                       "• Submits via HTTP POST to node:9601/submit\n" +
-                       "• Bearer token authorises getBlockTemplate + submitBlock only\n" +
-                       "• Templates expire after 30s — single-use\n",
+                text =
+                    "• Worker pulls immutable 80-byte header schedule + 32-byte target\n" +
+                        "• Searches 128-bit Poseidon2b nonce (CPU threads or Vulkan workgroups)\n" +
+                        "• Submits via HTTP POST to node:9601/submit\n" +
+                        "• Bearer token authorises getBlockTemplate + submitBlock only\n" +
+                        "• Templates expire after 30s — single-use\n",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

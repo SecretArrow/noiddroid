@@ -11,7 +11,6 @@ import org.junit.Test
  * real bridge).
  */
 class MinerNativeTest {
-
     @Test
     fun `loads native lib or reports graceful failure`() {
         // On a JVM (CI) the lib is not loadable — `loaded` should be false

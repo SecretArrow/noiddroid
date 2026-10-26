@@ -7,7 +7,6 @@ package org.secretarrow.noiddroid.mine
  * All native handles are kept as opaque [Long] values; this object owns them.
  */
 object MinerNative {
-
     init {
         // Defensive — System.loadLibrary is idempotent.
         try {
@@ -56,9 +55,10 @@ object MinerNative {
         require(target.size == 32) { "target must be 32 bytes, was ${target.size}" }
         val cb = onProgress?.let { ProgressCallbackBridge(it) }
         val sol = LongArray(4)
-        val rc = ifLoaded(-1) {
-            nativeSearchCpu(handle, header, target, templateId, cb, sol)
-        }
+        val rc =
+            ifLoaded(-1) {
+                nativeSearchCpu(handle, header, target, templateId, cb, sol)
+            }
         return SearchResult(
             rc = rc,
             templateId = sol[0],
@@ -82,9 +82,10 @@ object MinerNative {
         require(target.size == 32) { "target must be 32 bytes" }
         val cb = onProgress?.let { ProgressCallbackBridge(it) }
         val sol = LongArray(4)
-        val rc = ifLoaded(-1) {
-            nativeSearchGpu(header, target, templateId, cb, sol)
-        }
+        val rc =
+            ifLoaded(-1) {
+                nativeSearchGpu(header, target, templateId, cb, sol)
+            }
         return SearchResult(
             rc = rc,
             templateId = sol[0],
@@ -95,11 +96,15 @@ object MinerNative {
     }
 
     /** Convenience one-shot hash. Useful for tests and verification UI. */
-    fun poseidon2bHash(input: ByteArray): ByteArray? = ifLoaded(null) {
-        nativePoseidon2bHash(input)
-    }
+    fun poseidon2bHash(input: ByteArray): ByteArray? =
+        ifLoaded(null) {
+            nativePoseidon2bHash(input)
+        }
 
-    private inline fun <T> ifLoaded(default: T, block: () -> T): T =
+    private inline fun <T> ifLoaded(
+        default: T,
+        block: () -> T,
+    ): T =
         if (loaded) {
             try {
                 block()
@@ -107,13 +112,19 @@ object MinerNative {
                 error = t
                 default
             }
-        } else default
+        } else {
+            default
+        }
 
     // ── JNI declarations ──────────────────────────────────────────────
     @JvmStatic external fun nativeMinerCreate(threads: Int): Long
+
     @JvmStatic external fun nativeMinerDestroy(handle: Long)
+
     @JvmStatic external fun nativeMinerStop(handle: Long)
+
     @JvmStatic external fun nativeMinerHashrate(handle: Long): Long
+
     @JvmStatic external fun nativeSearchCpu(
         handle: Long,
         header: ByteArray,
@@ -122,6 +133,7 @@ object MinerNative {
         progressCallback: ProgressCallbackBridge?,
         solution: LongArray,
     ): Int
+
     @JvmStatic external fun nativeSearchGpu(
         header: ByteArray,
         target: ByteArray,
@@ -129,11 +141,14 @@ object MinerNative {
         progressCallback: ProgressCallbackBridge?,
         solution: LongArray,
     ): Int
+
     @JvmStatic external fun nativePoseidon2bHash(input: ByteArray): ByteArray
 }
 
 /** JNI-visible callback adapter so the C++ side can invoke the Kotlin lambda. */
-abstract class ProgressCallbackBridge(private val block: (Long) -> Unit) {
+abstract class ProgressCallbackBridge(
+    private val block: (Long) -> Unit,
+) {
     fun onProgress(rate: Long) = block(rate)
 }
 

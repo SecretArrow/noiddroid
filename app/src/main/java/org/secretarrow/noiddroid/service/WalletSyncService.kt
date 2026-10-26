@@ -1,6 +1,5 @@
 package org.secretarrow.noiddroid.service
 
-import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import androidx.lifecycle.LifecycleService
@@ -16,13 +15,16 @@ import dagger.hilt.android.AndroidEntryPoint
  */
 @AndroidEntryPoint
 class WalletSyncService : LifecycleService() {
-
     override fun onBind(intent: Intent): IBinder? {
         super.onBind(intent)
         return null
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    override fun onStartCommand(
+        intent: Intent?,
+        flags: Int,
+        startId: Int,
+    ): Int {
         super.onStartCommand(intent, flags, startId)
         return START_STICKY
     }

@@ -12,7 +12,6 @@ import io.sentry.android.core.SentryAndroid
  */
 @HiltAndroidApp
 class NoiddroidApp : Application() {
-
     override fun onCreate() {
         super.onCreate()
         instance = this
@@ -31,6 +30,7 @@ class NoiddroidApp : Application() {
 
     companion object {
         private const val TAG = "NoiddroidApp"
+
         @Volatile
         lateinit var instance: NoiddroidApp
             private set

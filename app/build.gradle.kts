@@ -34,11 +34,12 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags += listOf("-std=c++20", "-fexceptions", "-frtti")
-                arguments += listOf(
-                    "-DANDROID_PLATFORM=android-26",
-                    "-DANDROID_STL=c++_shared",
-                    "-DNOID_BUILD_MINER=ON",
-                )
+                arguments +=
+                    listOf(
+                        "-DANDROID_PLATFORM=android-26",
+                        "-DANDROID_STL=c++_shared",
+                        "-DNOID_BUILD_MINER=ON",
+                    )
             }
         }
     }
@@ -104,14 +105,15 @@ android {
 
     packaging {
         resources {
-            excludes += setOf(
-                "/META-INF/{AL2.0,LGPL2.1}",
-                "/META-INF/INDEX.LIST",
-                "/META-INF/io.netty.versions.properties",
-                "/META-INF/DEPENDENCIES",
-                "DebugProbesKt.bin",
-                "kotlin/**",
-            )
+            excludes +=
+                setOf(
+                    "/META-INF/{AL2.0,LGPL2.1}",
+                    "/META-INF/INDEX.LIST",
+                    "/META-INF/io.netty.versions.properties",
+                    "/META-INF/DEPENDENCIES",
+                    "DebugProbesKt.bin",
+                    "kotlin/**",
+                )
         }
         jniLibs {
             useLegacyPackaging = false
@@ -234,7 +236,7 @@ ktlint {
     debug = false
     android = true
     outputToConsole = true
-    ignoreFailures = true  // v1: warn-only — autofix.yml commits real fixes
+    ignoreFailures = true // v1: warn-only — autofix.yml commits real fixes
     enableExperimentalRules = true
     filter {
         exclude { it.path.contains("/generated/") }

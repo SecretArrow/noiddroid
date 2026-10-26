@@ -11,9 +11,12 @@ import org.secretarrow.noiddroid.store.SettingsRepository
 
 /** Holds the user's dark/light mode preference for the theme to consume. */
 @HiltViewModel
-class ThemeViewModel @Inject constructor(
-    settings: SettingsRepository,
-) : ViewModel() {
-    val darkMode: StateFlow<Boolean?> = settings.darkMode
-        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
-}
+class ThemeViewModel
+    @Inject
+    constructor(
+        settings: SettingsRepository,
+    ) : ViewModel() {
+        val darkMode: StateFlow<Boolean?> =
+            settings.darkMode
+                .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+    }

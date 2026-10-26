@@ -11,15 +11,15 @@ import kotlinx.serialization.json.JsonElement
 @Serializable
 data class BlockTemplate(
     val templateId: String,
-    val header: String,        // 80-byte hex schedule
-    val target: String,        // 32-byte hex target
-    val expiresAt: Long,       // epoch millis (server-provided)
+    val header: String, // 80-byte hex schedule
+    val target: String, // 32-byte hex target
+    val expiresAt: Long, // epoch millis (server-provided)
 )
 
 @Serializable
 data class BlockSubmission(
     val templateId: String,
-    val nonce: String,        // 16-byte hex nonce
+    val nonce: String, // 16-byte hex nonce
 )
 
 @Serializable
@@ -63,10 +63,10 @@ data class NativeHoldings(
 
 @Serializable
 data class NativeBalance(
-    val assetId: String,       // 64-char hex for tokens; "NOID" for native
+    val assetId: String, // 64-char hex for tokens; "NOID" for native
     val symbol: String,
     val decimals: Int,
-    val amount: String,        // integer string, base units
+    val amount: String, // integer string, base units
 )
 
 @Serializable
@@ -78,7 +78,7 @@ data class ReceiptPage(
 @Serializable
 data class Receipt(
     val txId: String,
-    val operation: String,     // transfer_token, trade, mint_nft, etc.
+    val operation: String, // transfer_token, trade, mint_nft, etc.
     val timestamp: Long,
     val verification: String, // confirmed, unconfirmed
     val amount: String? = null,

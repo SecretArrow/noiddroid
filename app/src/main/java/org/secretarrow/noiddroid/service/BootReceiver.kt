@@ -7,12 +7,12 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import org.secretarrow.noiddroid.store.SettingsRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import org.secretarrow.noiddroid.store.SettingsRepository
 
 /**
  * Resumes scheduled mining windows after device reboot or app upgrade.
@@ -22,12 +22,15 @@ import kotlinx.coroutines.launch
  */
 @AndroidEntryPoint
 class BootReceiver : BroadcastReceiver() {
-
     @Inject lateinit var settings: SettingsRepository
 
-    override fun onReceive(context: Context, intent: Intent) {
+    override fun onReceive(
+        context: Context,
+        intent: Intent,
+    ) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED &&
-            intent.action != Intent.ACTION_MY_PACKAGE_REPLACED) {
+            intent.action != Intent.ACTION_MY_PACKAGE_REPLACED
+        ) {
             return
         }
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -38,7 +41,7 @@ class BootReceiver : BroadcastReceiver() {
                 val windows = settings.scheduledWindows.first()
                 if (enabled && windows.isNotEmpty()) {
                     WorkManager.getInstance(context).enqueue(
-                        OneTimeWorkRequestBuilder<MiningResumeWorker>().build()
+                        OneTimeWorkRequestBuilder<MiningResumeWorker>().build(),
                     )
                 }
             } finally {
