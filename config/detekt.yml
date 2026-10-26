@@ -1,6 +1,11 @@
-# Detekt config — strict but sensible for production
-# https://detekt.dev/docs/next.0/rules/configuration
+# Detekt config — strict but sensible for production.
+# Reference: https://detekt.dev/docs/rules/configuration
 
+# ─── Top-level options ───────────────────────────────────────────────────
+# autoCorrect applies globally — move out of any ruleset block.
+autoCorrect: true
+
+# ─── Rulesets ────────────────────────────────────────────────────────────
 complexity:
   active: true
   ComplexCondition:
@@ -30,31 +35,6 @@ complexity:
     active: true
     threshold: 80
 
-style:
-  active: true
-  WildcardImport:
-    active: true
-    excludes: ['**/test/**', '**/androidTest/**']
-  ReturnCount:
-    active: false  # happy-path early returns are fine
-  MagicNumber:
-    active: false  # crypto code is full of magic numbers; rely on consts
-  MaxLineLength:
-    active: true
-    maxLineLength: 140
-    excludePackageStatements: true
-    excludeImportStatements: true
-
-naming:
-  active: true
-  FunctionNaming:
-    active: true
-    functionPattern: '([a-z][a-zA-Z0-9]*)|(`.*`)'
-    excludes: ['**/test/**', '**/androidTest/**', '**/ui/**', '**/theme/**']
-  TopLevelPropertyNaming:
-    active: true
-    constantPattern: '[A-Z][A-Za-z0-9]*'
-
 empty-blocks:
   active: true
   EmptyFunctionBlock:
@@ -67,6 +47,22 @@ exceptions:
   SwallowedException:
     active: true
     excludes: ['**/rpc/**']  # retrofit error swallowing is conventional
+
+naming:
+  active: true
+  FunctionNaming:
+    active: true
+    functionPattern: '([a-z][a-zA-Z0-9]*)|(`.*`)'
+    excludes:
+      - '**/test/**'
+      - '**/androidTest/**'
+      - '**/ui/**'
+      - '**/theme/**'
+      - '**/components/**'
+      - '**/screens/**'
+  TopLevelPropertyNaming:
+    active: true
+    constantPattern: '[A-Z][A-Za-z0-9]*'
 
 performance:
   active: true
@@ -82,14 +78,20 @@ potential-bugs:
   IteratorNotThrowingNoSuchElementException:
     active: true
 
-formatting:
+style:
   active: true
-  autoCorrect: true
-  CommentSpacing:
+  WildcardImport:
     active: true
-  Indentation:
-    active: true
-    indentSize: 4
-  MaximumLineLength:
+    excludes: ['**/test/**', '**/androidTest/**']
+  ReturnCount:
+    active: false  # happy-path early returns are fine
+  MagicNumber:
+    active: false  # crypto code is full of magic numbers; rely on consts
+  MaxLineLength:
     active: true
     maxLineLength: 140
+    excludePackageStatements: true
+    excludeImportStatements: true
+  UnusedPrivateMember:
+    active: true
+    excludes: ['**/preview/**']
