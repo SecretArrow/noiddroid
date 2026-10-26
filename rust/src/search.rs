@@ -106,6 +106,7 @@ pub fn run_cpu_search(
                     local_hashes = 0;
                 }
                 hash_counter.fetch_add(local_hashes, Ordering::Relaxed);
+                local_hashes
             })
         })
         .collect();
