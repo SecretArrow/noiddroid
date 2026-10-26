@@ -74,13 +74,15 @@
             </intent-filter>
         </activity>
 
-        <!-- Mining foreground service -->
+        <!-- Mining foreground service. Runs in the main process so the
+             MiningStateBus singleton is shared with the UI layer (object
+             singletons are per-process in Android). Mining work happens
+             on Dispatchers.Default so the UI thread is never blocked. -->
         <service
             android:name=".service.MiningService"
             android:exported="false"
             android:foregroundServiceType="dataSync"
-            android:stopWithTask="false"
-            android:process=":miner" />
+            android:stopWithTask="false" />
 
         <!-- Wallet sync service (separate process to keep UI responsive) -->
         <service
