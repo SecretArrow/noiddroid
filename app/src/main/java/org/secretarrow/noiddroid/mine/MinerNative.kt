@@ -7,6 +7,14 @@ package org.secretarrow.noiddroid.mine
  * All native handles are kept as opaque [Long] values; this object owns them.
  */
 object MinerNative {
+    @Volatile
+    var loaded: Boolean = false
+        private set
+
+    @Volatile
+    var error: Throwable? = null
+        private set
+
     init {
         // Defensive — System.loadLibrary is idempotent.
         try {
@@ -17,14 +25,6 @@ object MinerNative {
             error = t
         }
     }
-
-    @Volatile
-    var loaded: Boolean = false
-        private set
-
-    @Volatile
-    var error: Throwable? = null
-        private set
 
     /** Returns an opaque native miner handle, or 0 on failure. */
     fun create(threads: Int): Long = ifLoaded(0L) { nativeMinerCreate(threads) }
@@ -55,10 +55,7 @@ object MinerNative {
         require(target.size == 32) { "target must be 32 bytes, was ${target.size}" }
         val cb = onProgress?.let { ProgressCallbackBridge(it) }
         val sol = LongArray(4)
-        val rc =
-            ifLoaded(-1) {
-                nativeSearchCpu(handle, header, target, templateId, cb, sol)
-            }
+        val rc = ifLoaded(-1) { nativeSearchCpu(handle, header, target, templateId, cb, sol) }
         return SearchResult(
             rc = rc,
             templateId = sol[0],
@@ -82,10 +79,7 @@ object MinerNative {
         require(target.size == 32) { "target must be 32 bytes" }
         val cb = onProgress?.let { ProgressCallbackBridge(it) }
         val sol = LongArray(4)
-        val rc =
-            ifLoaded(-1) {
-                nativeSearchGpu(header, target, templateId, cb, sol)
-            }
+        val rc = ifLoaded(-1) { nativeSearchGpu(header, target, templateId, cb, sol) }
         return SearchResult(
             rc = rc,
             templateId = sol[0],
@@ -145,8 +139,9 @@ object MinerNative {
     @JvmStatic external fun nativePoseidon2bHash(input: ByteArray): ByteArray
 }
 
-/** JNI-visible callback adapter so the C++ side can invoke the Kotlin lambda. */
-abstract class ProgressCallbackBridge(
+/** JNI-visible callback adapter so the C++ side can invoke the Kotlin lambda.
+ *  Concrete (non-abstract) so it can be instantiated directly. */
+class ProgressCallbackBridge(
     private val block: (Long) -> Unit,
 ) {
     fun onProgress(rate: Long) = block(rate)

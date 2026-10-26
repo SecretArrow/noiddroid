@@ -51,7 +51,7 @@ class MiningService : LifecycleService() {
     private var guardJob: Job? = null
     private var wakeLock: PowerManager.WakeLock? = null
     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    private val _state = MutableStateFlow(MiningState.Idle)
+    private val _state = MutableStateFlow<MiningState>(MiningState.Idle)
 
     val state: StateFlow<MiningState> = _state.asStateFlow()
 

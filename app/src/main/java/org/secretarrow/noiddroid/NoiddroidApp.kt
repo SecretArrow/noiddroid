@@ -17,9 +17,8 @@ class NoiddroidApp : Application() {
         instance = this
 
         // Sentry crash reporting — auto-init disabled in manifest so we
-        // can configure the breadcrumb capacity before the first event.
+        // can configure breadcrumbs + sample rate before the first event.
         SentryAndroid.init(this) { options ->
-            options.isEnableAll = BuildConfig.DEBUG.not()
             options.tracesSampleRate = 1.0
             options.isAttachScreenshot = false
             options.isAttachViewHierarchy = false

@@ -39,8 +39,9 @@ class MiningRepository
         }
 
         companion object {
-            // Stable per-install worker id. Generated once and persisted.
-            const val WORKER_ID = "noiddroid-android-${BuildConfigFlavour.BUILD_HASH}"
+            // Stable per-install worker id. Generated once at class init (not const
+            // — uses BuildConfigFlavour.BUILD_HASH which is computed at runtime).
+            val WORKER_ID: String = "noiddroid-android-${BuildConfigFlavour.BUILD_HASH}"
         }
     }
 
