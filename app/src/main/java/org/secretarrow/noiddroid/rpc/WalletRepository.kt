@@ -97,23 +97,21 @@ class WalletRepository
             return callExpecting(WalletMethod.WALLET_RECEIPTS, params, bearer)
         }
 
-        private suspend fun callExpecting(
-            method: String,
-            params: JsonArray,
-            bearer: String?,
-        ): JsonElement {
-            val id = counter.incrementAndGet()
-            val request =
-                JsonRpcRequest(
-                    id = id,
-                    method = method,
-                    params = params,
-                )
-            val response = api.call(bearer?.let { "Bearer $it" }, request)
-            response.error?.let {
-                throw WalletRpcException(it.code, it.message, it.data)
-            }
-            return response.result ?: throw WalletRpcException(-1, "Empty result", null)
+
+    private suspend fun callExpecting(
+        method: String,
+        params: JsonArray,
+        bearer: String?,
+    ): JsonElement {
+        val id = counter.incrementAndGet()
+        val request = JsonRpcRequest(
+            id = id,
+            method = method,
+            params = params,
+        )
+        val response = api.call(bearer?.let { "Bearer $it" }, request)
+        response.error?.let {
+            throw WalletRpcException(it.code, it.message, it.data?.let { d -> d as? JsonObject })
         }
     }
 

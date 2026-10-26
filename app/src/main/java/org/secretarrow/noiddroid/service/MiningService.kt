@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import org.secretarrow.noiddroid.MainActivity
+import org.secretarrow.noiddroid.ui.MainActivity
 import org.secretarrow.noiddroid.R
 import org.secretarrow.noiddroid.mine.MinerNative
 import org.secretarrow.noiddroid.mine.SearchResult
