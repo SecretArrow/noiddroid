@@ -17,7 +17,10 @@ class WalletRepositoryTest {
         val api = mockk<WalletApi>()
         val expected = JsonPrimitive("ok")
         coEvery { api.call(any(), any()) } returns JsonRpcResponse(
-            jsonrpc = "2.0", id = 1, result = expected, error = null,
+            jsonrpc = "2.0",
+            id = 1,
+            result = expected,
+            error = null,
         )
         val repo = WalletRepository(api)
         val result = repo.getNativeProtocol(bearer = "test")
@@ -28,7 +31,9 @@ class WalletRepositoryTest {
     fun `error response throws WalletRpcException`() = runTest {
         val api = mockk<WalletApi>()
         coEvery { api.call(any(), any()) } returns JsonRpcResponse(
-            jsonrpc = "2.0", id = 1, result = null,
+            jsonrpc = "2.0",
+            id = 1,
+            result = null,
             error = JsonRpcError(code = -32_000, message = "boom", data = null),
         )
         val repo = WalletRepository(api)
@@ -43,6 +48,7 @@ class WalletRepositoryTest {
 }
 
 class MiningRepositoryTest {
+
     @Test
     fun `submitBlock sends templateId and nonce`() = runTest {
         val api = mockk<MiningApi>()
@@ -51,12 +57,16 @@ class MiningRepositoryTest {
         val payoutFlow = MutableStateFlow<String?>(null)
         every { settings.bearerToken } returns bearerFlow
         every { settings.payoutAddress } returns payoutFlow
-        coEvery {
-            api.submitBlock(any(), any())
-        } returns SubmitResult(accepted = true, reason = null)
+        coEvery { api.submitBlock(any(), any()) } returns SubmitResult(
+            accepted = true,
+            reason = null,
+        )
 
         val repo = MiningRepository(api, settings)
-        val result = repo.submitBlock("tpl-123", "0011223344556677889900aabbccddeeff")
+        val result = repo.submitBlock(
+            "tpl-123",
+            "0011223344556677889900aabbccddeeff",
+        )
         assertTrue(result.accepted)
     }
 }
