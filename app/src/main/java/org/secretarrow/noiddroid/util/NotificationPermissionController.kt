@@ -35,16 +35,18 @@ class NotificationPermissionController(
         activity.registerForActivityResult(
             ActivityResultContracts.RequestPermission(),
         ) { granted ->
-            if (!granted && !activity.shouldShowRequestPermissionRationale(
+            if (!granted &&
+                !activity.shouldShowRequestPermissionRationale(
                     Manifest.permission.POST_NOTIFICATIONS,
                 )
             ) {
                 // Permanent denial — send user to system settings to enable
                 // notifications for the app. The skill mandates this redirect
                 // instead of looping or showing another dialog.
-                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                    data = Uri.fromParts("package", activity.packageName, null)
-                }
+                val intent =
+                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.fromParts("package", activity.packageName, null)
+                    }
                 activity.startActivity(intent)
             }
             onResult(granted)

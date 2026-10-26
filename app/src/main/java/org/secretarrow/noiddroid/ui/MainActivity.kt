@@ -26,7 +26,6 @@ import org.secretarrow.noiddroid.util.NotificationPermissionController
  */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
     // Registered as a property so the ActivityResultLauncher is initialised
     // during onCreate (before the activity finishes creating). Must be
     // constructed BEFORE setContent() is called, otherwise the launcher
@@ -42,17 +41,18 @@ class MainActivity : ComponentActivity() {
         // (per android/skills android-permissions-security 3-state flow).
         // On Android 13+ this prompts the user on first launch so the
         // MiningService foreground notification can actually be posted.
-        notificationPermission = NotificationPermissionController(
-            activity = this,
-            onResult = { granted ->
-                // The skill says: catch SecurityException around protected
-                // calls. The mining service will catch and log on its own.
-                android.util.Log.i(
-                    "MainActivity",
-                    "POST_NOTIFICATIONS granted=$granted",
-                )
-            },
-        )
+        notificationPermission =
+            NotificationPermissionController(
+                activity = this,
+                onResult = { granted ->
+                    // The skill says: catch SecurityException around protected
+                    // calls. The mining service will catch and log on its own.
+                    android.util.Log.i(
+                        "MainActivity",
+                        "POST_NOTIFICATIONS granted=$granted",
+                    )
+                },
+            )
 
         setContent {
             // Obtain the SplashViewModel via Compose's hiltViewModel() so
