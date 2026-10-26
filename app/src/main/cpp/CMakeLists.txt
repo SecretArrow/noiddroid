@@ -15,12 +15,23 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWER)
 
+# AGP uses these build types for the three Android variants:
+#   - Debug       -> CMake "Debug"     -> cargo "debug"
+#   - Release     -> CMake "Release"   -> cargo "release"
+#   - RelWithDebInfo -> CMake "RelWithDebInfo" -> cargo "release"  (we map)
+# Cargo has no RelWithDebInfo profile, so we map it to release.
+if(CMAKE_BUILD_TYPE_LOWER STREQUAL "relwithdebinfo")
+    set(RUST_PROFILE "release")
+else()
+    set(RUST_PROFILE "${CMAKE_BUILD_TYPE_LOWER}")
+endif()
+
 # ── Rust static library path ────────────────────────────────────────────
 # Built by cargo before Gradle assembles the APK. The `rust/build-prepare.sh`
 # script cross-compiles to aarch64-linux-android and writes the .a here.
 # CMAKE_SOURCE_DIR = app/src/main/cpp/ ; project root is 4 levels up.
 set(PROJECT_ROOT "${CMAKE_SOURCE_DIR}/../../../..")
-set(RUST_LIB_DIR "${PROJECT_ROOT}/rust/target/aarch64-linux-android/${CMAKE_BUILD_TYPE_LOWER}")
+set(RUST_LIB_DIR "${PROJECT_ROOT}/rust/target/aarch64-linux-android/${RUST_PROFILE}")
 set(RUST_LIB "${RUST_LIB_DIR}/libnoiddroid_core.a")
 
 if(NOT EXISTS "${RUST_LIB}")
